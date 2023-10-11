@@ -47,7 +47,7 @@ Follow the steps to install the node packages required for both building and run
     # Installing requirements
     pip install -r requirements.txt
     # Installing python-osw-validation package
-    pip install -i https://test.pypi.org/simple/ python-osw-validation==0.0.2
+    pip install -i https://test.pypi.org/simple/ python-osw-validation==0.0.3
     ```
 ### How to Run the Server/APIs   
 
