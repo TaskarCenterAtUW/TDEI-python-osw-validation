@@ -60,7 +60,7 @@ class Upload:
             try:
                 return Upload(data=message)
             except Exception as e:
-                error = str(e).replace('GTFSFlexUpload', 'Invalid parameter,')
+                error = str(e).replace('Upload', 'Invalid parameter,')
                 raise TypeError(error)
 
 

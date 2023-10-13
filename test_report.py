@@ -30,7 +30,9 @@ if __name__ == '__main__':
     # Open the output file in write mode
     with open(output_file, 'w') as f:
         # Create an HTMLTestRunner instance with the output file and customize the template
-        runner = HtmlTestRunner.HTMLTestRunner(stream=f, report_title='Test Report', combine_reports=True)
+        runner = HtmlTestRunner.HTMLTestRunner(stream=f, report_title='OSW Test Report', combine_reports=True)
 
         # Run the test suite with the HTMLTestRunner
         runner.run(test_suite)
+
+    print(f'\nRunning the tests complete.. see the report at {output_file}')
