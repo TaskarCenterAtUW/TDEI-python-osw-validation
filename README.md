@@ -7,7 +7,7 @@ Service to Validate the OSW files that is uploaded. At the moment, the service d
   - Download the file locally 
   - File location is in the message `data.meta.file_upload_path`
   - Uses `python-osw-validation` to validate the file
-  - Added the `isValid` and `validationMessage` keys to the original message 
+  - Adds the `isValid` and `validationMessage` keys to the original message 
 - Publishes the result to the topic mentioned in `.env` file, example `VALIDATION_TOPIC=osw-validation`
 
 ## Getting Started
@@ -31,10 +31,10 @@ STORAGECONNECTION=xxxx
 ```
 
 The application connect with the `STORAGECONNECTION` string provided in `.env` file and validates downloaded zipfile using `python-osw-validation` package.
-`QUEUECONNECTION` is not being used in this application but this is the main requirement for `python-ms-core` package
+`QUEUECONNECTION` is used to send out the messages and listen to messages.
 
 ### How to Setup and Build
-Follow the steps to install the node packages required for both building and running the application
+Follow the steps to install the python packages required for both building and running the application
 
 1. Setup virtual environment
     ```
@@ -73,7 +73,7 @@ Make sure you have set up the project properly before running the tests, see abo
      "Result": true/false // Defining the test output 
      }
     ```
-2. Test Harness would require the valid `.env` file.
+2. Test Harness would require a valid `.env` file.
 3. To run the test harness `python tests/test_harness/run_tests.py` 
 #### How to run unit test cases
 1. `.env` file is not required for Unit test cases.
