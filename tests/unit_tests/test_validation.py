@@ -146,7 +146,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_invalid_file(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{FAILURE_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -160,7 +160,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_invalid_zip_file(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{FAILURE_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -175,7 +175,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_invalid_format_file(self):
         # Arrange
-        file_path = f'{SAVED_FILE_PATH}/gtfs-pathways-upload.json'
+        file_path = f'{SAVED_FILE_PATH}/${FAILURE_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -190,7 +190,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_id_missing_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{ID_MISSING_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{ID_MISSING_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -205,7 +205,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_id_missing_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{ID_MISSING_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{ID_MISSING_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -220,7 +220,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_invalid_edges_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{EDGES_INVALID_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{EDGES_INVALID_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -235,7 +235,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_invalid_edges_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{EDGES_INVALID_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{EDGES_INVALID_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -250,7 +250,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_invalid_nodes_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{NODES_INVALID_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{NODES_INVALID_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -265,7 +265,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_invalid_nodes_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{NODES_INVALID_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{NODES_INVALID_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -280,7 +280,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_invalid_points_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{POINTS_INVALID_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{POINTS_INVALID_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -295,7 +295,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_invalid_points_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{POINTS_INVALID_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{POINTS_INVALID_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -310,7 +310,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_invalid_files_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{INVALID_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{INVALID_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -325,7 +325,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_invalid_files_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{INVALID_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{INVALID_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -340,7 +340,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_invalid_geometry_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{INVALID_GEOMETRY_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{INVALID_GEOMETRY_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -355,7 +355,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_invalid_geometry_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{INVALID_GEOMETRY_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{INVALID_GEOMETRY_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -370,7 +370,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_missing_identifier_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{MISSING_IDENTIFIER_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{MISSING_IDENTIFIER_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -385,7 +385,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_missing_identifier_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{MISSING_IDENTIFIER_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{MISSING_IDENTIFIER_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -400,7 +400,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_no_entity_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{NO_ENTITY_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{NO_ENTITY_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -415,7 +415,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_no_entity_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{NO_ENTITY_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{NO_ENTITY_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -430,7 +430,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_validate_with_wrong_datatype_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{WRONG_DATATYPE_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{WRONG_DATATYPE_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
@@ -445,7 +445,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_wring_datatype_zip(self):
         # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{WRONG_DATATYPE_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{WRONG_DATATYPE_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()

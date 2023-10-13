@@ -69,7 +69,7 @@ Make sure you have set up the project properly before running the tests, see abo
     ```
     {
      "Name": "Test Name",
-     "Input_file": "test_files/pathways_test_case1.json", // Input file path which you want to provide to the test
+     "Input_file": "test_files/osw_test_case1.json", // Input file path which you want to provide to the test
      "Result": true/false // Defining the test output 
      }
     ```

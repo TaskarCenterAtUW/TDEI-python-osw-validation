@@ -121,7 +121,6 @@ class Request:
         self._valid_to = data.get('valid_to', '')
         self._data_source = data.get('data_source', '')
         self._polygon = data.get('polygon', {})
-        self._pathways_schema_version = data.get('pathways_schema_version', '')
 
     @property
     def tdei_org_id(self): return self._tdei_org_id
@@ -177,11 +176,6 @@ class Request:
     @polygon.setter
     def polygon(self, value): self._polygon = value
 
-    @property
-    def pathways_schema_version(self): return self._pathways_schema_version
-
-    @pathways_schema_version.setter
-    def pathways_schema_version(self, value): self._pathways_schema_version = value
 
 
 class Meta:

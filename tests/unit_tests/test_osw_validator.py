@@ -42,7 +42,7 @@ class TestOSWValidator(unittest.TestCase):
     @patch.object(OSWValidator, 'send_status')  # Mock the send_status method
     def test_valid_send_status(self, mock_send_status):
         upload_message_data = MagicMock()
-        upload_message_data.stage = 'Pathways-Validation'  # Set the stage attribute
+        upload_message_data.stage = 'OSW-Validation'  # Set the stage attribute
 
         # Create a mock meta object
         mock_meta = MagicMock()
@@ -69,7 +69,7 @@ class TestOSWValidator(unittest.TestCase):
         self.validator.send_status(result=result, upload_message=upload_message)
 
         # Add assertions for the expected behavior
-        self.assertEqual(upload_message_data.stage, 'Pathways-Validation')
+        self.assertEqual(upload_message_data.stage, 'OSW-Validation')
         self.assertTrue(upload_message_data.meta.isValid)
         self.assertEqual(upload_message_data.meta.validationMessage, 'Validation successful')
         self.assertTrue(upload_message_data.response.success)
@@ -81,7 +81,7 @@ class TestOSWValidator(unittest.TestCase):
     @patch.object(OSWValidator, 'send_status')  # Mock the send_status method
     def test_invalid_send_status(self, mock_send_status):
         upload_message_data = MagicMock()
-        upload_message_data.stage = 'Pathways-Validation'  # Set the stage attribute
+        upload_message_data.stage = 'OSW-Validation'  # Set the stage attribute
 
         # Create a mock meta object
         mock_meta = MagicMock()
@@ -109,7 +109,7 @@ class TestOSWValidator(unittest.TestCase):
         self.validator.send_status(result=result, upload_message=upload_message)
 
         # Add assertions for the expected behavior
-        self.assertEqual(upload_message_data.stage, 'Pathways-Validation')
+        self.assertEqual(upload_message_data.stage, 'OSW-Validation')
         self.assertFalse(upload_message_data.meta.isValid)
         self.assertEqual(upload_message_data.meta.validationMessage, 'Validation failed')
         self.assertFalse(upload_message_data.response.success)
