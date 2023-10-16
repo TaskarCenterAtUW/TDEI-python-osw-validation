@@ -43,8 +43,6 @@ class TestUpload(unittest.TestCase):
         self.upload.data.stage = 'Test stage'
         self.assertEqual(self.upload.data.stage, 'Test stage')
 
-        # Add more assertions for other properties of GTFSPathwaysUploadData
-
     def test_to_json(self):
         self.upload.data.to_json = MagicMock(return_value={})
         json_data = self.upload.to_json()
