@@ -4,3 +4,9 @@ python-dotenv==0.21.0
 pydantic==1.10.4
 python-ms-core==0.0.16
 uvicorn==0.20.0
+coverage==7.2.7
+html_testRunner==1.2.1
+httpx==0.24.1
+
+jsonschema==4.19.1
+zipfile36==0.1.3
