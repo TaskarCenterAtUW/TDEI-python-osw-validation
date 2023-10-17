@@ -5,6 +5,9 @@ on:
     branches: [dev]
     types:
       - closed
+  push:
+    branches:
+      - 'Task-454'
   workflow_dispatch:
 
 jobs:
