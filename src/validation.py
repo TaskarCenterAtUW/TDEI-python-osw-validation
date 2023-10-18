@@ -41,7 +41,7 @@ class Validation:
             result.is_valid = validation_result.is_valid
             if not result.is_valid:
                 result.validation_message = validation_result.errors
-                # logger.error(f' Error While Validating File: {str(validation_result.errors)}')
+                logger.error(f' Error While Validating File: {str(validation_result.errors)}')
             Validation.clean_up(downloaded_file_path)
         else:
             result.validation_message = 'Failed to validate because unknown file format'

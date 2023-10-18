@@ -113,26 +113,19 @@ class UploadData:
 class Request:
     def __init__(self, data: dict):
         self._tdei_org_id = data.get('tdei_org_id', '')
-        self._tdei_station_id = data.get('tdei_station_id', '')
         self._collected_by = data.get('collected_by', '')
         self._collection_date = data.get('collection_date', '')
         self._collection_method = data.get('collection_method', '')
-        self._valid_from = data.get('valid_from', '')
-        self._valid_to = data.get('valid_to', '')
+        self._publication_date = data.get('publication_date', '')
         self._data_source = data.get('data_source', '')
         self._polygon = data.get('polygon', {})
+        self._osw_schema_version = data.get('osw_schema_version', '')
 
     @property
     def tdei_org_id(self): return self._tdei_org_id
 
     @tdei_org_id.setter
     def tdei_org_id(self, value): self._tdei_org_id = value
-
-    @property
-    def tdei_station_id(self): return self._tdei_station_id
-
-    @tdei_station_id.setter
-    def tdei_station_id(self, value): self._tdei_station_id = value
 
     @property
     def collected_by(self): return self._collected_by
@@ -153,18 +146,6 @@ class Request:
     def collection_method(self, value): self._collection_method = value
 
     @property
-    def valid_from(self): return self._valid_from
-
-    @valid_from.setter
-    def valid_from(self, value): self._valid_from = value
-
-    @property
-    def valid_to(self): return self._valid_to
-
-    @valid_to.setter
-    def valid_to(self, value): self._valid_to = value
-
-    @property
     def data_source(self): return self._data_source
 
     @data_source.setter
@@ -176,6 +157,17 @@ class Request:
     @polygon.setter
     def polygon(self, value): self._polygon = value
 
+    @property
+    def publication_date(self): return self._publication_date
+
+    @publication_date.setter
+    def publication_date(self, value): self._publication_date = value
+
+    @property
+    def osw_schema_version(self): return self._osw_schema_version
+
+    @osw_schema_version.setter
+    def osw_schema_version(self, value): self._osw_schema_version = value
 
 
 class Meta:

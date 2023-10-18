@@ -92,7 +92,7 @@ class TestUploadData(unittest.TestCase):
 class TestRequest(unittest.TestCase):
 
     def setUp(self):
-        data = TEST_DATA['data']
+        data = TEST_DATA['data']['request']
         self.request = Request(data)
 
     def test_tdei_org_id(self):
@@ -100,7 +100,43 @@ class TestRequest(unittest.TestCase):
         self.request.tdei_org_id = 'Test org ID'
         self.assertEqual(self.request.tdei_org_id, 'Test org ID')
 
-    # Add more test cases for other properties of Request
+    def test_collected_by(self):
+        self.assertEqual(self.request.collected_by, '6D3E5B8C-FB16-4B6A-9436-72FD24756CC9')
+        self.request.collected_by = 'Test Collected By'
+        self.assertEqual(self.request.collected_by, 'Test Collected By')
+
+    def test_collection_date(self):
+        self.assertEqual(self.request.collection_date, '2022-11-22T09:43:07.978Z')
+        self.request.collection_date = 'Test Collected Date'
+        self.assertEqual(self.request.collection_date, 'Test Collected Date')
+
+    def test_collection_method(self):
+        self.assertEqual(self.request.collection_method, 'manual')
+        self.request.collection_method = 'Test Collected Method'
+        self.assertEqual(self.request.collection_method, 'Test Collected Method')
+
+    def test_publication_date(self):
+        self.assertEqual(self.request.publication_date, '2022-11-22T09:43:07.978Z')
+        self.request.publication_date = 'Test Publication Date'
+        self.assertEqual(self.request.publication_date, 'Test Publication Date')
+
+    def test_data_source(self):
+        self.assertEqual(self.request.data_source, 'local')
+        self.request.data_source = 'Test Data Source'
+        self.assertEqual(self.request.data_source, 'Test Data Source')
+
+    def test_polygon(self):
+        self.request.polygon = {
+            'test': 'Polygon'
+        }
+        self.assertEqual(self.request.polygon, {
+            'test': 'Polygon'
+        })
+
+    def test_osw_schema_version(self):
+        self.assertEqual(self.request.osw_schema_version, '1.0.0')
+        self.request.osw_schema_version = '1.1.0'
+        self.assertEqual(self.request.osw_schema_version, '1.1.0')
 
 
 class TestMeta(unittest.TestCase):
@@ -126,6 +162,12 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(self.response.success, True)
         self.response.success = False
         self.assertEqual(self.response.success, False)
+
+    def test_message(self):
+        self.assertEqual(self.response.message,
+                         'File uploaded for the Organization : 0b41ebc5-350c-42d3-90af-3af4ad3628fb with tdei record id : c8c76e89f30944d2b2abd2491bd95337')
+        self.response.message = 'Successful'
+        self.assertEqual(self.response.message, 'Successful')
 
 
 class TestToJson(unittest.TestCase):
