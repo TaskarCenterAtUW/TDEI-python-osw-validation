@@ -69,7 +69,7 @@ class TestOSWValidator(unittest.TestCase):
         self.validator.send_status(result=result, upload_message=upload_message)
 
         # Add assertions for the expected behavior
-        self.assertEqual(upload_message_data.stage, 'Rakesh validation')
+        self.assertEqual(upload_message_data.stage, 'OSW-Validation')
         self.assertTrue(upload_message_data.meta.isValid)
         self.assertEqual(upload_message_data.meta.validationMessage, 'Validation successful')
         self.assertTrue(upload_message_data.response.success)
