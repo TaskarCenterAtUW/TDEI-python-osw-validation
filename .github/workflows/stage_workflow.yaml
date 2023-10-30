@@ -1,15 +1,15 @@
 ---
-######### Dev Workflow  ########
+######### Stage Workflow  ########
 on:
   pull_request:
-    branches: [dev]
+    branches: [stage]
     types:
       - closed
   workflow_dispatch:
 
 jobs:
   Build:
-    environment: Development
+    environment: Stage
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     steps:
@@ -29,9 +29,9 @@ jobs:
       name: Development
     runs-on: ubuntu-latest
     steps:
-    - name: Deploy to Dev
+    - name: Deploy to Stage
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        images: ${{ secrets.REGISTRY_DOMAIN }}/${{ secrets.REGISTRY_REPO }}:${{ github.sha }}
+        images: ${{ secrets.REGISTRY_DOMAIN }}/${{ secrets.REGISTRY_REPO }}:${{ github.sha }}.
