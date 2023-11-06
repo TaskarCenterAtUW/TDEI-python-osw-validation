@@ -26,7 +26,7 @@ jobs:
   Deploy:
     needs: Build
     environment:
-      name: Development
+      name: Stage
     runs-on: ubuntu-latest
     steps:
     - name: Deploy to Stage
