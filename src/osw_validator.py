@@ -105,7 +105,7 @@ class OSWValidator:
         try:
             permission_request = PermissionRequest(
                 user_id=queue_message.data.user_id,
-                org_id=queue_message.data.tdei_project_group_id,
+                project_group_id=queue_message.data.tdei_project_group_id,
                 permissions=roles,
                 should_satisfy_all=False
             )
