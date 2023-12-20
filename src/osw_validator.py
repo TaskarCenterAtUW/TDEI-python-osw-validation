@@ -80,8 +80,8 @@ class OSWValidator:
         upload_message.data.message = result.validation_message
 
         data = QueueMessage.data_from({
-            'messageId': uuid.uuid1().hex[0:24],
-            'messageType': 'osw-validation',
+            'messageId': upload_message.message_id,
+            'messageType': upload_message.message_type,
             'data': upload_message.data.to_json()
         })
         try:
