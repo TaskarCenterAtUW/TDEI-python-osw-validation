@@ -88,7 +88,7 @@ class OSWValidator:
             self.publishing_topic.publish(data=data)
         except Exception as e:
             print(e)
-        logger.info(f'Publishing message for : {upload_message.data.tdei_record_id}')
+        logger.info(f'Publishing message for : {upload_message.message_id}')
 
     def has_permission(self, roles: List[str], queue_message: Upload) -> bool:
         try:
