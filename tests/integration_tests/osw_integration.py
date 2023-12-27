@@ -10,9 +10,9 @@ from urllib.parse import urlparse
 # Execute to apply environment variable overrides
 load_dotenv()
 
-os.environ['UPLOAD_TOPIC'] = 'temp-upload'
-os.environ['UPLOAD_SUBSCRIPTION'] = 'upload-validation-processor'
-os.environ['VALIDATION_TOPIC'] = 'temp-validation'
+os.environ['VALIDATION_REQ_TOPIC'] = 'temp-upload'
+os.environ['VALIDATION_REQ_SUB'] = 'upload-validation-processor'
+os.environ['VALIDATION_RES_TOPIC'] = 'temp-validation'
 
 from src.osw_validator import OSWValidator
 from python_ms_core import Core
@@ -27,9 +27,9 @@ class TestOSWIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.core = Core()
-        cls.upload_topic_name = os.environ['UPLOAD_TOPIC']
-        cls.upload_subscription_name = os.environ['UPLOAD_SUBSCRIPTION']
-        cls.validation_topic_name = os.environ['VALIDATION_TOPIC']
+        cls.upload_topic_name = os.environ['VALIDATION_REQ_TOPIC']
+        cls.upload_subscription_name = os.environ['VALIDATION_REQ_SUB']
+        cls.validation_topic_name = os.environ['VALIDATION_RES_TOPIC']
 
     def setUp(self):
         self.test_data = self.read_test_data()
