@@ -47,25 +47,22 @@ class OSWValidator:
     def validate(self, received_message: Upload):
         tdei_record_id: str = ''
         try:
-            tdei_record_id = received_message.data.tdei_record_id
+            tdei_record_id = received_message.message_id
             logger.info(f'Received message for : {tdei_record_id} Message received for OSW validation !')
-            if received_message.data.response.success is False:
-                error_msg = 'Received failed workflow request'
-                logger.error(f'{tdei_record_id}, {error_msg} !')
-                raise Exception(error_msg)
 
-            if received_message.data.meta.file_upload_path is None:
+            if received_message.data.file_upload_path is None:
                 error_msg = 'Request does not have valid file path specified.'
                 logger.error(f'{tdei_record_id}, {error_msg} !')
                 raise Exception(error_msg)
 
-            if self.has_permission(roles=['tdei-admin', 'poc', 'osw_data_generator'],
-                                   queue_message=received_message) is None:
-                error_msg = 'Unauthorized request !'
-                logger.error(tdei_record_id, error_msg, received_message)
-                raise Exception(error_msg)
+            if 'VALIDATION_ONLY' not in received_message.message_type:
+                if self.has_permission(roles=['tdei-admin', 'poc', 'osw_data_generator'],
+                                       queue_message=received_message) is None:
+                    error_msg = 'Unauthorized request !'
+                    logger.error(tdei_record_id, error_msg, received_message)
+                    raise Exception(error_msg)
 
-            file_upload_path = urllib.parse.unquote(received_message.data.meta.file_upload_path)
+            file_upload_path = urllib.parse.unquote(received_message.data.file_upload_path)
             if file_upload_path:
                 validation_result = Validation(file_path=file_upload_path, storage_client=self.storage_client)
                 result = validation_result.validate()
@@ -80,26 +77,19 @@ class OSWValidator:
             self.send_status(result=result, upload_message=received_message)
 
     def send_status(self, result: ValidationResult, upload_message: Upload):
-        upload_message.data.meta.isValid = result.is_valid
-        upload_message.data.meta.validationMessage = result.validation_message
-        upload_message.data.stage = 'osw-validation'
-
-        upload_message.data.response.success = result.is_valid
-        upload_message.data.response.message = str(result.validation_message)
+        upload_message.data.success = result.is_valid
+        upload_message.data.message = result.validation_message
 
         data = QueueMessage.data_from({
-            'messageId': uuid.uuid1().hex[0:24],
-            'message': upload_message.message or 'OSW validation output',
-            'messageType': 'osw-validation',
-            'data': upload_message.data.to_json(),
-            'publishedDate': str(datetime.datetime.now())
+            'messageId': upload_message.message_id,
+            'messageType': upload_message.message_type,
+            'data': upload_message.data.to_json()
         })
         try:
-
             self.publishing_topic.publish(data=data)
         except Exception as e:
             print(e)
-        logger.info(f'Publishing message for : {upload_message.data.tdei_record_id}')
+        logger.info(f'Publishing message for : {upload_message.message_id}')
 
     def has_permission(self, roles: List[str], queue_message: Upload) -> bool:
         try:
