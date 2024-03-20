@@ -116,7 +116,7 @@ Make sure you have set up the project properly before running the tests, see abo
    1. `python test_report.py`
    2. Above command will run all test cases and generate the html report, in `reports` folder at the root level.
 3. To run the coverage
-   1. `coverage run --source=src -m unittest discover -s tests/unit_tests`
+   1. `python -m coverage run --source=src -m unittest discover -s tests/unit_tests`
    2. Above command will run all the unit test cases.
    3. To generate the coverage report in console
       1. `coverage report`
