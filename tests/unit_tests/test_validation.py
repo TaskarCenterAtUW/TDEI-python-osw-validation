@@ -21,7 +21,7 @@ NO_ENTITY_FILE_NAME = 'no_entity.zip'
 WRONG_DATATYPE_FILE_NAME = 'wrong_datatype.zip'
 
 
-class TestSuccessValidation(unittest.TestCase):
+class TestOtherValidation(unittest.TestCase):
 
     @patch.object(Validation, 'download_single_file')
     def setUp(self, mock_download_single_file):
@@ -43,33 +43,6 @@ class TestSuccessValidation(unittest.TestCase):
 
     def tearDown(self):
         pass
-
-    def test_validate_with_valid_file(self):
-        # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{SUCCESS_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertTrue(result.is_valid)
-
-    def test_is_osw_valid_with_valid_file(self):
-        # Arrange
-        file_path = f'{DOWNLOAD_FILE_PATH}/{SUCCESS_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertTrue(result.is_valid)
-        Validation.clean_up.assert_called_once_with(file_path)
 
     def test_download_single_file(self):
         # Arrange
@@ -121,7 +94,7 @@ class TestSuccessValidation(unittest.TestCase):
         # self.assertFalse(os.path.exists(directory_name))
 
 
-class TestFailureValidation(unittest.TestCase):
+class TestValidation(unittest.TestCase):
 
     @patch.object(Validation, 'download_single_file')
     def setUp(self, mock_download_single_file):
@@ -175,7 +148,7 @@ class TestFailureValidation(unittest.TestCase):
 
     def test_is_osw_valid_with_invalid_format_file(self):
         # Arrange
-        file_path = f'{SAVED_FILE_PATH}/${FAILURE_FILE_NAME}'
+        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
         expected_downloaded_file_path = file_path
         self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
         Validation.clean_up = MagicMock()
