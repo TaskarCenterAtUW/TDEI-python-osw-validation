@@ -9,6 +9,7 @@ from python_ms_core.core.auth.models.permission_request import PermissionRequest
 from .validation import Validation
 from .models.queue_message_content import Upload, ValidationResult
 from .config import Settings
+import threading
 
 logging.basicConfig()
 logger = logging.getLogger('OSW_VALIDATOR')
@@ -40,7 +41,9 @@ class OSWValidator:
             if message is not None:
                 queue_message = QueueMessage.to_dict(message)
                 upload_message = Upload.data_from(queue_message)
-                self.validate(upload_message)
+                process_thread = threading.Thread(target=self.validate, args=[upload_message])
+                process_thread.start()
+                # self.validate(upload_message)
 
         self.listening_topic.subscribe(subscription=self.subscription_name, callback=process)
 
