@@ -14,7 +14,7 @@ class EventBusSettings:
 
 
 class Settings(BaseSettings):
-    app_name: str = 'python-osw-validation'
+    app_name: str = 'osw-validation'
     event_bus = EventBusSettings()
     auth_permission_url: str = os.environ.get('AUTH_PERMISSION_URL', None)
 

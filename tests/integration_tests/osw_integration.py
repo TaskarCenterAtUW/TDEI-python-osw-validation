@@ -14,7 +14,7 @@ os.environ['VALIDATION_REQ_TOPIC'] = 'temp-upload'
 os.environ['VALIDATION_REQ_SUB'] = 'upload-validation-processor'
 os.environ['VALIDATION_RES_TOPIC'] = 'temp-validation'
 
-from src.osw_validator import OSWValidator
+from src.osw_validator_service import OSWValidatorService
 from python_ms_core import Core
 from python_ms_core.core.queue.models.queue_message import QueueMessage
 
@@ -43,22 +43,22 @@ class TestOSWIntegration(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @patch.object(OSWValidator, 'start_listening', new=MagicMock())
+    @patch.object(OSWValidatorService, 'start_listening', new=MagicMock())
     def test_subscribe_to_upload_topic(self):
         if os.environ['QUEUECONNECTION'] is None:
             self.fail('QUEUECONNECTION environment not set')
-        validator = OSWValidator()
+        validator = OSWValidatorService()
         upload_topic = self.core.get_topic(topic_name=self.upload_topic_name)
         message = QueueMessage.data_from({'message': '', 'data': self.test_data})
         upload_topic.publish(data=message)
         time.sleep(0.5)  # Wait to get the callback
         validator.start_listening.assert_called_once()
 
-    @patch.object(OSWValidator, 'start_listening', new=MagicMock())
+    @patch.object(OSWValidatorService, 'start_listening', new=MagicMock())
     async def test_servicebus_receive(self):
         if os.environ['QUEUECONNECTION'] is None:
             self.fail('QUEUECONNECTION environment not set')
-        validator = OSWValidator()
+        validator = OSWValidatorService()
         subscribe_function = MagicMock()
         message = QueueMessage.data_from({'message': '', 'data': self.test_data})
         validator.publishing_topic.publish(data=message)

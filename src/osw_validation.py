@@ -15,8 +15,8 @@ logging.basicConfig()
 logger = logging.getLogger('OSW_VALIDATION')
 logger.setLevel(logging.INFO)
 
-
-class Validation:
+# OSWValidation class to validate the OSW file
+class OSWValidation:
     def __init__(self, file_path=None, storage_client=None):
         settings = Settings()
         self.container_name = settings.event_bus.container_name
@@ -42,7 +42,7 @@ class Validation:
             if not result.is_valid:
                 result.validation_message = validation_result.errors
                 logger.error(f' Error While Validating File: {str(validation_result.errors)}')
-            Validation.clean_up(downloaded_file_path)
+            OSWValidation.clean_up(downloaded_file_path)
         else:
             result.validation_message = 'Failed to validate because unknown file format'
             logger.error(f' Failed to validate because unknown file format')

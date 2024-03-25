@@ -2,7 +2,7 @@ import os
 import json
 import unittest
 from unittest.mock import MagicMock, patch, call
-from src.osw_validator import OSWValidator
+from src.osw_validator_service import OSWValidatorService
 from src.models.queue_message_content import ValidationResult, Upload
 
 current_dir = os.path.dirname(os.path.abspath(os.path.join(__file__, '../')))
@@ -22,8 +22,8 @@ class PermissionResponse:
 class TestOSWValidator(unittest.TestCase):
 
     def setUp(self):
-        with patch.object(OSWValidator, '__init__', return_value=None):
-            self.validator = OSWValidator()
+        with patch.object(OSWValidatorService, '__init__', return_value=None):
+            self.validator = OSWValidatorService()
             self.validator._subscription_name = MagicMock()
             self.validator.listening_topic = MagicMock()
             self.validator.publish_topic = MagicMock()
@@ -31,7 +31,7 @@ class TestOSWValidator(unittest.TestCase):
             self.validator.storage_client = MagicMock()
             self.validator.auth = MagicMock()
 
-    @patch.object(OSWValidator, 'start_listening')
+    @patch.object(OSWValidatorService, 'start_listening')
     def test_start_listening(self, mock_start_listening):
         # Act
         self.validator.start_listening()
@@ -39,7 +39,7 @@ class TestOSWValidator(unittest.TestCase):
         # Assert
         mock_start_listening.assert_called_once()
 
-    @patch.object(OSWValidator, 'send_status')  # Mock the send_status method
+    @patch.object(OSWValidatorService, 'send_status')  # Mock the send_status method
     def test_valid_send_status(self, mock_send_status):
         upload_message_data = MagicMock()
         upload_message_data.stage = 'OSW-Validation'  # Set the stage attribute
@@ -78,7 +78,7 @@ class TestOSWValidator(unittest.TestCase):
         # Assert that the send_status method was called once with the expected arguments
         mock_send_status.assert_called_once_with(result=result, upload_message=upload_message)
 
-    @patch.object(OSWValidator, 'send_status')  # Mock the send_status method
+    @patch.object(OSWValidatorService, 'send_status')  # Mock the send_status method
     def test_invalid_send_status(self, mock_send_status):
         upload_message_data = MagicMock()
         upload_message_data.stage = 'OSW-Validation'  # Set the stage attribute

@@ -3,7 +3,7 @@ import psutil
 from fastapi import FastAPI, APIRouter, Depends, status
 from functools import lru_cache
 from .config import Settings
-from .osw_validator import OSWValidator
+from .osw_validator_service import OSWValidatorService
 
 app = FastAPI()
 
@@ -18,7 +18,7 @@ def get_settings():
 @app.on_event('startup')
 async def startup_event(settings: Settings = Depends(get_settings)) -> None:
     try:
-        OSWValidator()
+        OSWValidatorService()
     except:
         print('\n\n\x1b[31m Application startup failed due to missing or invalid .env file \x1b[0m')
         print('\x1b[31m Please provide the valid .env file and .env file should contains following parameters\x1b[0m')

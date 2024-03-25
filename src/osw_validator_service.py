@@ -6,7 +6,7 @@ from typing import List
 from python_ms_core import Core
 from python_ms_core.core.queue.models.queue_message import QueueMessage
 from python_ms_core.core.auth.models.permission_request import PermissionRequest
-from .validation import Validation
+from .osw_validation import OSWValidation
 from .models.queue_message_content import Upload, ValidationResult
 from .config import Settings
 import threading
@@ -15,8 +15,8 @@ logging.basicConfig()
 logger = logging.getLogger('OSW_VALIDATOR')
 logger.setLevel(logging.INFO)
 
-
-class OSWValidator:
+# Service that listens to the events and handles validation
+class OSWValidatorService:
     _settings = Settings()
 
     def __init__(self):
@@ -67,7 +67,7 @@ class OSWValidator:
 
             file_upload_path = urllib.parse.unquote(received_message.data.file_upload_path)
             if file_upload_path:
-                validation_result = Validation(file_path=file_upload_path, storage_client=self.storage_client)
+                validation_result = OSWValidation(file_path=file_upload_path, storage_client=self.storage_client)
                 result = validation_result.validate()
                 self.send_status(result=result, upload_message=received_message)
             else:
