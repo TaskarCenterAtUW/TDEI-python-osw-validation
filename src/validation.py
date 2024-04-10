@@ -88,6 +88,6 @@ class Validation:
             logger.info(f' Removing File: {path}')
             os.remove(path)
         else:
-            folder = os.path.join(DOWNLOAD_FILE_PATH, path)
-            logger.info(f' Removing Folder: {folder}')
-            shutil.rmtree(folder, ignore_errors=False)
+            # folder = os.path.join(DOWNLOAD_FILE_PATH, path)
+            logger.info(f' Removing Folder: {path}')
+            shutil.rmtree(path, ignore_errors=False)
