@@ -6,6 +6,7 @@ from pathlib import Path
 from .config import Settings
 from python_osw_validation import OSWValidation
 from .models.queue_message_content import ValidationResult
+import uuid
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Path used for download file generation.
@@ -49,24 +50,37 @@ class Validation:
 
         return result
 
+    # Downloads the single file into a unique directory
     def download_single_file(self, file_upload_path=None) -> str:
         is_exists = os.path.exists(DOWNLOAD_FILE_PATH)
+        unique_id = self.get_unique_id()
         if not is_exists:
             os.makedirs(DOWNLOAD_FILE_PATH)
-
+        unique_directory = os.path.join(DOWNLOAD_FILE_PATH,unique_id)
+        if not os.path.exists(unique_directory):
+            os.makedirs(unique_directory)
+            
         file = self.storage_client.get_file_from_url(self.container_name, file_upload_path)
         try:
             if file.file_path:
                 file_path = os.path.basename(file.file_path)
-                with open(f'{DOWNLOAD_FILE_PATH}/{file_path}', 'wb') as blob:
+                local_download_path = os.path.join(unique_directory,file_path)
+                with open(local_download_path, 'wb') as blob:
                     blob.write(file.get_stream())
-                logger.info(f' File downloaded to location: {DOWNLOAD_FILE_PATH}/{file_path}')
-                return f'{DOWNLOAD_FILE_PATH}/{file_path}'
+                logger.info(f' File downloaded to location: {local_download_path}')
+                return local_download_path
             else:
                 logger.info(' File not found!')
         except Exception as e:
             traceback.print_exc()
             logger.error(e)
+
+    # Generates a unique string for directory
+    def get_unique_id(self) -> str:
+        unique_id = uuid.uuid1().hex[0:24]
+        return unique_id
+
+
 
     @staticmethod
     def clean_up(path):
