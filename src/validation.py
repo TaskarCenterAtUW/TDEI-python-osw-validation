@@ -26,10 +26,10 @@ class Validation:
         self.file_relative_path = file_path.split('/')[-1]
         self.client = self.storage_client.get_container(container_name=self.container_name)
 
-    def validate(self) -> ValidationResult:
-        return self.is_osw_valid()
+    def validate(self, max_errors=20) -> ValidationResult:
+        return self.is_osw_valid(max_errors)
 
-    def is_osw_valid(self) -> ValidationResult:
+    def is_osw_valid(self, max_errors) -> ValidationResult:
         result = ValidationResult()
         result.is_valid = False
         result.validation_message = ''
@@ -38,7 +38,7 @@ class Validation:
             downloaded_file_path = self.download_single_file(self.file_path)
             logger.info(f' Downloaded file path: {downloaded_file_path}')
             validator = OSWValidation(zipfile_path=downloaded_file_path)
-            validation_result = validator.validate()
+            validation_result = validator.validate(max_errors)
             result.is_valid = validation_result.is_valid
             if not result.is_valid:
                 result.validation_message = validation_result.errors
