@@ -32,7 +32,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install -i https://test.pypi.org/simple/ python-osw-validation==0.0.3
 
       - name: Run unit tests
         run: |

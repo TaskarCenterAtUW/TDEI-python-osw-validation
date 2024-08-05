@@ -131,6 +131,36 @@ class TestValidation(unittest.TestCase):
         self.assertFalse(result.is_valid)
         self.assertIsInstance(result.validation_message, list)
 
+    def test_validate_with_invalid_file_with_default_error_counts(self):
+        # Arrange
+        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
+        expected_downloaded_file_path = file_path
+        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
+        Validation.clean_up = MagicMock()
+
+        # Act
+        result = self.validator.validate()
+
+        # Assert
+        self.assertFalse(result.is_valid)
+        self.assertIsInstance(result.validation_message, list)
+        self.assertLessEqual(len(result.validation_message), 20)
+
+    def test_validate_with_invalid_file_with_specific_error_counts(self):
+        # Arrange
+        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
+        expected_downloaded_file_path = file_path
+        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
+        Validation.clean_up = MagicMock()
+
+        # Act
+        result = self.validator.validate(max_errors=10)
+
+        # Assert
+        self.assertFalse(result.is_valid)
+        self.assertIsInstance(result.validation_message, list)
+        self.assertLessEqual(len(result.validation_message), 10)
+
     def test_is_osw_valid_with_invalid_zip_file(self):
         # Arrange
         file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
@@ -184,7 +214,7 @@ class TestValidation(unittest.TestCase):
         Validation.clean_up = MagicMock()
 
         # Act
-        result = self.validator.is_osw_valid()
+        result = self.validator.is_osw_valid(max_errors=2)
 
         # Assert
         self.assertFalse(result.is_valid)
@@ -214,7 +244,7 @@ class TestValidation(unittest.TestCase):
         Validation.clean_up = MagicMock()
 
         # Act
-        result = self.validator.is_osw_valid()
+        result = self.validator.is_osw_valid(max_errors=2)
 
         # Assert
         self.assertFalse(result.is_valid)
@@ -244,7 +274,7 @@ class TestValidation(unittest.TestCase):
         Validation.clean_up = MagicMock()
 
         # Act
-        result = self.validator.is_osw_valid()
+        result = self.validator.is_osw_valid(max_errors=2)
 
         # Assert
         self.assertFalse(result.is_valid)
@@ -274,7 +304,7 @@ class TestValidation(unittest.TestCase):
         Validation.clean_up = MagicMock()
 
         # Act
-        result = self.validator.is_osw_valid()
+        result = self.validator.is_osw_valid(max_errors=2)
 
         # Assert
         self.assertFalse(result.is_valid)
@@ -304,7 +334,7 @@ class TestValidation(unittest.TestCase):
         Validation.clean_up = MagicMock()
 
         # Act
-        result = self.validator.is_osw_valid()
+        result = self.validator.is_osw_valid(max_errors=2)
 
         # Assert
         self.assertFalse(result.is_valid)
@@ -334,7 +364,7 @@ class TestValidation(unittest.TestCase):
         Validation.clean_up = MagicMock()
 
         # Act
-        result = self.validator.is_osw_valid()
+        result = self.validator.is_osw_valid(max_errors=2)
 
         # Assert
         self.assertFalse(result.is_valid)
@@ -364,7 +394,7 @@ class TestValidation(unittest.TestCase):
         Validation.clean_up = MagicMock()
 
         # Act
-        result = self.validator.is_osw_valid()
+        result = self.validator.is_osw_valid(max_errors=2)
 
         # Assert
         self.assertFalse(result.is_valid)
@@ -394,7 +424,7 @@ class TestValidation(unittest.TestCase):
         Validation.clean_up = MagicMock()
 
         # Act
-        result = self.validator.is_osw_valid()
+        result = self.validator.is_osw_valid(max_errors=2)
 
         # Assert
         self.assertFalse(result.is_valid)
@@ -424,7 +454,7 @@ class TestValidation(unittest.TestCase):
         Validation.clean_up = MagicMock()
 
         # Act
-        result = self.validator.is_osw_valid()
+        result = self.validator.is_osw_valid(max_errors=2)
 
         # Assert
         self.assertFalse(result.is_valid)
