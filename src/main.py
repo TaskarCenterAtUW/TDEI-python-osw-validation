@@ -9,6 +9,8 @@ app = FastAPI()
 
 prefix_router = APIRouter(prefix='/health')
 
+# Have a reference to validator in the app object
+app.validator = None
 
 @lru_cache()
 def get_settings():
@@ -18,7 +20,8 @@ def get_settings():
 @app.on_event('startup')
 async def startup_event(settings: Settings = Depends(get_settings)) -> None:
     try:
-        OSWValidator()
+        # OSWValidator()
+        app.validator = OSWValidator()
     except:
         print('\n\n\x1b[31m Application startup failed due to missing or invalid .env file \x1b[0m')
         print('\x1b[31m Please provide the valid .env file and .env file should contains following parameters\x1b[0m')
@@ -34,6 +37,11 @@ async def startup_event(settings: Settings = Depends(get_settings)) -> None:
             child.kill()
         parent.kill()
 
+@app.on_event('shutdown')
+async def shutdown_event() -> None:
+    print('Shutting down the application')
+    if app.validator:
+        app.validator.stop_listening()
 
 @app.get('/', status_code=status.HTTP_200_OK)
 @prefix_router.get('/', status_code=status.HTTP_200_OK)
