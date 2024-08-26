@@ -31,7 +31,8 @@ class OSWValidator:
         self.logger = self.core.get_logger()
         self.storage_client = self.core.get_storage_client()
         self.auth = self.core.get_authorizer(config=options)
-        self.start_listening()
+        self.listener_thread = threading.Thread(target=self.start_listening)
+        self.listener_thread.start()
 
     def start_listening(self):
         def process(message) -> None:
@@ -103,3 +104,6 @@ class OSWValidator:
         except Exception as error:
             print('Error validating the request authorization:', error)
             return False
+
+    def stop_listening(self):
+        self.listener_thread.join(timeout=0) # Stop the thread during shutdown.Its still an attempt. Not sure if this will work.
