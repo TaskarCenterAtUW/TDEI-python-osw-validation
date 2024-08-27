@@ -31,10 +31,15 @@ class OSWValidator:
         self.logger = self.core.get_logger()
         self.storage_client = self.core.get_storage_client()
         self.auth = self.core.get_authorizer(config=options)
-        self.listener_thread = threading.Thread(target=self.start_listening)
-        self.listener_thread.start()
+        # self.listener_thread = threading.Thread(target=self.start_listening)
+        # self.listener_thread.start()
+        t = threading.Timer(5, self.start_listening)
+        t.start()
+        # Wait for 5 seconds and start listening
+
 
     def start_listening(self):
+        logger.info(f'Started listening')
         def process(message) -> None:
             if message is not None:
                 queue_message = QueueMessage.to_dict(message)
@@ -106,4 +111,5 @@ class OSWValidator:
             return False
 
     def stop_listening(self):
-        self.listener_thread.join(timeout=0) # Stop the thread during shutdown.Its still an attempt. Not sure if this will work.
+        # self.listener_thread.join(timeout=0) # Stop the thread during shutdown.Its still an attempt. Not sure if this will work.
+        pass
