@@ -20,30 +20,26 @@ class OSWValidator:
     _settings = Settings()
 
     def __init__(self):
-        core = Core()
+        self.core = Core()
         options = {
             'provider': self._settings.auth_provider,
             'api_url': self._settings.auth_permission_url
         }
         listening_topic_name = self._settings.event_bus.upload_topic or ''
-        publishing_topic_name = self._settings.event_bus.validation_topic or ''
         self.subscription_name = self._settings.event_bus.upload_subscription or ''
-        self.listening_topic = core.get_topic(topic_name=listening_topic_name)
-        self.publishing_topic = core.get_topic(topic_name=publishing_topic_name)
-        self.logger = core.get_logger()
-        self.storage_client = core.get_storage_client()
-        self.auth = core.get_authorizer(config=options)
-        self.container_name = self._settings.event_bus.container_name
-        self.start_listening()
+        self.listening_topic = self.core.get_topic(topic_name=listening_topic_name, max_concurrent_messages=self._settings.max_concurrent_messages)
+        self.logger = self.core.get_logger()
+        self.storage_client = self.core.get_storage_client()
+        self.auth = self.core.get_authorizer(config=options)
+        self.listener_thread = threading.Thread(target=self.start_listening)
+        self.listener_thread.start()
 
     def start_listening(self):
         def process(message) -> None:
             if message is not None:
                 queue_message = QueueMessage.to_dict(message)
                 upload_message = Upload.data_from(queue_message)
-                process_thread = threading.Thread(target=self.validate, args=[upload_message])
-                process_thread.start()
-                # self.validate(upload_message)
+                self.validate(received_message=upload_message)
 
         self.listening_topic.subscribe(subscription=self.subscription_name, callback=process)
 
@@ -89,10 +85,11 @@ class OSWValidator:
             'data': upload_message.data.to_json()
         })
         try:
-            self.publishing_topic.publish(data=data)
+            self.core.get_topic(topic_name=self._settings.event_bus.validation_topic).publish(data=data)
+            logger.info(f'Publishing message for : {upload_message.message_id}')
         except Exception as e:
-            print(e)
-        logger.info(f'Publishing message for : {upload_message.message_id}')
+            logger.error(f'Error occurred while publishing message for : {upload_message.message_id} with error: {e}')
+
 
     def has_permission(self, roles: List[str], queue_message: Upload) -> bool:
         try:
@@ -107,3 +104,6 @@ class OSWValidator:
         except Exception as error:
             print('Error validating the request authorization:', error)
             return False
+
+    def stop_listening(self):
+        self.listener_thread.join(timeout=0) # Stop the thread during shutdown.Its still an attempt. Not sure if this will work.

@@ -30,12 +30,14 @@ VALIDATION_REQ_SUB=xxxx
 VALIDATION_RES_TOPIC=xxxx
 CONTAINER_NAME=xxxx
 AUTH_PERMISSION_URL=xxx
+MAX_CONCURRENT_MESSAGES=xxx
 
 ```
 
 The application connect with the `STORAGECONNECTION` string provided in `.env` file and validates downloaded zipfile using `python-osw-validation` package.
 `QUEUECONNECTION` is used to send out the messages and listen to messages.
 
+`MAX_CONCURRENT_MESSAGES` is the maximum number of concurrent messages that the service can handle. If not provided, defaults to 2
 
 ### How to Set up and Build
 Follow the steps to install the python packages required for both building and running the application
