@@ -1,6 +1,4 @@
-import uuid
 import logging
-import datetime
 import urllib.parse
 from typing import List
 from python_ms_core import Core
@@ -89,7 +87,6 @@ class OSWValidator:
             logger.info(f'Publishing message for : {upload_message.message_id}')
         except Exception as e:
             logger.error(f'Error occurred while publishing message for : {upload_message.message_id} with error: {e}')
-
 
     def has_permission(self, roles: List[str], queue_message: Upload) -> bool:
         try:
