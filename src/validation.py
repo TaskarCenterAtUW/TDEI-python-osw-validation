@@ -1,4 +1,6 @@
 import os
+import uuid
+import time
 import shutil
 import logging
 import traceback
@@ -6,7 +8,6 @@ from pathlib import Path
 from .config import Settings
 from python_osw_validation import OSWValidation
 from .models.queue_message_content import ValidationResult
-import uuid
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Path used for download file generation.
@@ -40,6 +41,7 @@ class Validation:
             Validation.clean_up(self.unique_dir_path)
 
     def is_osw_valid(self, max_errors) -> ValidationResult:
+        start_time = time.time()
         result = ValidationResult()
         result.is_valid = False
         result.validation_message = ''
@@ -57,7 +59,9 @@ class Validation:
         else:
             result.validation_message = 'Failed to validate because unknown file format'
             logger.error(f' Failed to validate because unknown file format')
-
+        end_time = time.time()
+        time_taken = end_time - start_time
+        logger.info(f'Validation completed in {time_taken} seconds')
         return result
 
     # Downloads the single file into a unique directory
