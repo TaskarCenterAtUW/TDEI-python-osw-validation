@@ -10,7 +10,7 @@ import uuid
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Path used for download file generation.
-DOWNLOAD_FILE_PATH = f'{Path.cwd()}/downloads'
+DOWNLOAD_DIR = f'{Path.cwd()}/downloads'
 
 logging.basicConfig()
 logger = logging.getLogger('OSW_VALIDATION')
@@ -25,9 +25,19 @@ class Validation:
         self.file_path = file_path
         self.file_relative_path = file_path.split('/')[-1]
         self.client = self.storage_client.get_container(container_name=self.container_name)
+        is_exists = os.path.exists(DOWNLOAD_DIR)
+        unique_id = self.get_unique_id()
+        if not is_exists:
+            os.makedirs(DOWNLOAD_DIR)
+        self.unique_dir_path = os.path.join(DOWNLOAD_DIR, unique_id)
+        if not os.path.exists(self.unique_dir_path):
+            os.makedirs(self.unique_dir_path)
 
     def validate(self, max_errors=20) -> ValidationResult:
-        return self.is_osw_valid(max_errors)
+        try:
+            return self.is_osw_valid(max_errors)
+        finally:
+            Validation.clean_up(self.unique_dir_path)
 
     def is_osw_valid(self, max_errors) -> ValidationResult:
         result = ValidationResult()
@@ -52,19 +62,12 @@ class Validation:
 
     # Downloads the single file into a unique directory
     def download_single_file(self, file_upload_path=None) -> str:
-        is_exists = os.path.exists(DOWNLOAD_FILE_PATH)
-        unique_id = self.get_unique_id()
-        if not is_exists:
-            os.makedirs(DOWNLOAD_FILE_PATH)
-        unique_directory = os.path.join(DOWNLOAD_FILE_PATH,unique_id)
-        if not os.path.exists(unique_directory):
-            os.makedirs(unique_directory)
-            
+
         file = self.storage_client.get_file_from_url(self.container_name, file_upload_path)
         try:
             if file.file_path:
                 file_path = os.path.basename(file.file_path)
-                local_download_path = os.path.join(unique_directory,file_path)
+                local_download_path = os.path.join(self.unique_dir_path, file_path)
                 with open(local_download_path, 'wb') as blob:
                     blob.write(file.get_stream())
                 logger.info(f' File downloaded to location: {local_download_path}')
@@ -80,14 +83,11 @@ class Validation:
         unique_id = uuid.uuid1().hex[0:24]
         return unique_id
 
-
-
     @staticmethod
     def clean_up(path):
         if os.path.isfile(path):
             logger.info(f' Removing File: {path}')
             os.remove(path)
         else:
-            # folder = os.path.join(DOWNLOAD_FILE_PATH, path)
             logger.info(f' Removing Folder: {path}')
             shutil.rmtree(path, ignore_errors=False)
