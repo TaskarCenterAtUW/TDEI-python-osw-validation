@@ -1,3 +1,4 @@
+import gc
 import os
 import shutil
 import logging
@@ -47,7 +48,7 @@ class Validation:
         else:
             result.validation_message = 'Failed to validate because unknown file format'
             logger.error(f' Failed to validate because unknown file format')
-
+        gc.collect()
         return result
 
     # Downloads the single file into a unique directory
@@ -56,15 +57,15 @@ class Validation:
         unique_id = self.get_unique_id()
         if not is_exists:
             os.makedirs(DOWNLOAD_FILE_PATH)
-        unique_directory = os.path.join(DOWNLOAD_FILE_PATH,unique_id)
+        unique_directory = os.path.join(DOWNLOAD_FILE_PATH, unique_id)
         if not os.path.exists(unique_directory):
             os.makedirs(unique_directory)
-            
+
         file = self.storage_client.get_file_from_url(self.container_name, file_upload_path)
         try:
             if file.file_path:
                 file_path = os.path.basename(file.file_path)
-                local_download_path = os.path.join(unique_directory,file_path)
+                local_download_path = os.path.join(unique_directory, file_path)
                 with open(local_download_path, 'wb') as blob:
                     blob.write(file.get_stream())
                 logger.info(f' File downloaded to location: {local_download_path}')
@@ -74,13 +75,13 @@ class Validation:
         except Exception as e:
             traceback.print_exc()
             logger.error(e)
+        finally:
+            gc.collect()
 
     # Generates a unique string for directory
     def get_unique_id(self) -> str:
         unique_id = uuid.uuid1().hex[0:24]
         return unique_id
-
-
 
     @staticmethod
     def clean_up(path):
@@ -91,3 +92,4 @@ class Validation:
             # folder = os.path.join(DOWNLOAD_FILE_PATH, path)
             logger.info(f' Removing Folder: {path}')
             shutil.rmtree(path, ignore_errors=False)
+        gc.collect()
