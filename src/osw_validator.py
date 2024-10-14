@@ -57,7 +57,7 @@ class OSWValidator:
                 if self.has_permission(roles=['tdei-admin', 'poc', 'osw_data_generator'],
                                        queue_message=received_message) is None:
                     error_msg = 'Unauthorized request !'
-                    logger.error(tdei_record_id, error_msg, received_message)
+                    logger.error(f'{tdei_record_id}, {error_msg}, {received_message}')
                     raise Exception(error_msg)
 
             file_upload_path = urllib.parse.unquote(received_message.data.file_upload_path)
