@@ -75,7 +75,8 @@ class TestValidation(unittest.TestCase):
 
         # Assert that validation is marked as valid
         self.assertFalse(result.is_valid)
-        self.assertIn('Validation error', result.validation_message)
+        self.assertIn('Validation error', ' '.join(result.validation_message))
+
 
         # Ensure clean_up is called twice (once for the file, once for the folder)
         self.assertEqual(mock_clean_up.call_count, 2)
@@ -99,6 +100,23 @@ class TestValidation(unittest.TestCase):
 
         # Ensure clean_up is called twice (once for the file, once for the folder)
         self.assertEqual(mock_clean_up.call_count, 1)
+
+    @patch('src.validation.Validation.download_single_file')
+    def test_validate_unknown_file_format(self, mock_download_file):
+        """Test validation failure for unknown file format."""
+
+        # Mock the file path with a non-zip extension to trigger the else block
+        self.validation.file_relative_path = 'invalid_file.txt'
+
+        # Mock download to not affect the actual download method
+        mock_download_file.return_value = '/path/to/invalid_file.txt'
+
+        # Act
+        result = self.validation.validate(max_errors=10)
+
+        # Assert that the validation failed due to unknown file format
+        self.assertFalse(result.is_valid)
+        self.assertEqual(result.validation_message, 'Failed to validate because unknown file format')
 
     @patch('src.validation.Validation.download_single_file', return_value=f'{SAVED_FILE_PATH}/{SUCCESS_FILE_NAME}')
     @patch('gc.collect')
