@@ -1,5 +1,6 @@
 import gc
 import os
+import time
 import shutil
 import logging
 import traceback
@@ -11,7 +12,7 @@ import uuid
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Path used for download file generation.
-DOWNLOAD_FILE_PATH = f'{Path.cwd()}/downloads'
+DOWNLOAD_DIR = f'{Path.cwd()}/downloads'
 
 logging.basicConfig()
 logger = logging.getLogger('OSW_VALIDATION')
@@ -26,46 +27,55 @@ class Validation:
         self.file_path = file_path
         self.file_relative_path = file_path.split('/')[-1]
         self.client = self.storage_client.get_container(container_name=self.container_name)
+        is_exists = os.path.exists(DOWNLOAD_DIR)
+        unique_id = self.get_unique_id()
+        if not is_exists:
+            os.makedirs(DOWNLOAD_DIR)
+        self.unique_dir_path = os.path.join(DOWNLOAD_DIR, unique_id)
+        if not os.path.exists(self.unique_dir_path):
+            os.makedirs(self.unique_dir_path)
 
     def validate(self, max_errors=20) -> ValidationResult:
-        return self.is_osw_valid(max_errors)
+        try:
+            return self.is_osw_valid(max_errors)
+        finally:
+            Validation.clean_up(self.unique_dir_path)
 
     def is_osw_valid(self, max_errors) -> ValidationResult:
+        start_time = time.time()
         result = ValidationResult()
         result.is_valid = False
         result.validation_message = ''
         root, ext = os.path.splitext(self.file_relative_path)
         if ext and ext.lower() == '.zip':
             downloaded_file_path = self.download_single_file(self.file_path)
-            logger.info(f' Downloaded file path: {downloaded_file_path}')
-            validator = OSWValidation(zipfile_path=downloaded_file_path)
-            validation_result = validator.validate(max_errors)
-            result.is_valid = validation_result.is_valid
-            if not result.is_valid:
-                result.validation_message = validation_result.errors
-                logger.error(f' Error While Validating File: {str(validation_result.errors)}')
-            Validation.clean_up(downloaded_file_path)
+            if downloaded_file_path:
+                logger.info(f' Downloaded file path: {downloaded_file_path}')
+                validator = OSWValidation(zipfile_path=downloaded_file_path)
+                validation_result = validator.validate(max_errors)
+                result.is_valid = validation_result.is_valid
+                if not result.is_valid:
+                    result.validation_message = validation_result.errors
+                    logger.error(f' Error While Validating File: {str(validation_result.errors)}')
+                Validation.clean_up(downloaded_file_path)
+            else:
+                result.validation_message = 'Failed to validate because unknown file format'
         else:
             result.validation_message = 'Failed to validate because unknown file format'
             logger.error(f' Failed to validate because unknown file format')
+        end_time = time.time()
+        time_taken = end_time - start_time
+        logger.info(f'Validation completed in {time_taken} seconds')
         gc.collect()
         return result
 
     # Downloads the single file into a unique directory
     def download_single_file(self, file_upload_path=None) -> str:
-        is_exists = os.path.exists(DOWNLOAD_FILE_PATH)
-        unique_id = self.get_unique_id()
-        if not is_exists:
-            os.makedirs(DOWNLOAD_FILE_PATH)
-        unique_directory = os.path.join(DOWNLOAD_FILE_PATH, unique_id)
-        if not os.path.exists(unique_directory):
-            os.makedirs(unique_directory)
-
         file = self.storage_client.get_file_from_url(self.container_name, file_upload_path)
         try:
             if file.file_path:
                 file_path = os.path.basename(file.file_path)
-                local_download_path = os.path.join(unique_directory, file_path)
+                local_download_path = os.path.join(self.unique_dir_path, file_path)
                 with open(local_download_path, 'wb') as blob:
                     blob.write(file.get_stream())
                 logger.info(f' File downloaded to location: {local_download_path}')
