@@ -1,6 +1,5 @@
-import uuid
+import gc
 import logging
-import datetime
 import urllib.parse
 from typing import List
 from python_ms_core import Core
@@ -58,7 +57,7 @@ class OSWValidator:
                 if self.has_permission(roles=['tdei-admin', 'poc', 'osw_data_generator'],
                                        queue_message=received_message) is None:
                     error_msg = 'Unauthorized request !'
-                    logger.error(tdei_record_id, error_msg, received_message)
+                    logger.error(f'{tdei_record_id}, {error_msg}, {received_message}')
                     raise Exception(error_msg)
 
             file_upload_path = urllib.parse.unquote(received_message.data.file_upload_path)
@@ -89,6 +88,8 @@ class OSWValidator:
             logger.info(f'Publishing message for : {upload_message.message_id}')
         except Exception as e:
             logger.error(f'Error occurred while publishing message for : {upload_message.message_id} with error: {e}')
+        finally:
+            gc.collect()
 
 
     def has_permission(self, roles: List[str], queue_message: Upload) -> bool:

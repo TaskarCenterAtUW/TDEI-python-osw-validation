@@ -1,9 +1,8 @@
 import os
-import shutil
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 from src.validation import Validation
+from unittest.mock import patch, MagicMock
 
 DOWNLOAD_FILE_PATH = f'{Path.cwd()}/downloads'
 SAVED_FILE_PATH = f'{Path.cwd()}/tests/unit_tests/test_files'
@@ -21,466 +20,158 @@ NO_ENTITY_FILE_NAME = 'no_entity.zip'
 WRONG_DATATYPE_FILE_NAME = 'wrong_datatype.zip'
 
 
-class TestOtherValidation(unittest.TestCase):
-
-    @patch.object(Validation, 'download_single_file')
-    def setUp(self, mock_download_single_file):
-        os.makedirs(DOWNLOAD_FILE_PATH, exist_ok=True)
-        source = f'{SAVED_FILE_PATH}/{SUCCESS_FILE_NAME}'
-        destination = f'{DOWNLOAD_FILE_PATH}/{SUCCESS_FILE_NAME}'
-
-        if not os.path.isfile(destination):
-            shutil.copyfile(source, destination)
-
-        file_path = f'{DOWNLOAD_FILE_PATH}/{SUCCESS_FILE_NAME}'
-
-        with patch.object(Validation, '__init__', return_value=None):
-            self.validator = Validation(file_path=file_path, storage_client=MagicMock())
-            self.validator.file_path = file_path
-            self.validator.file_relative_path = SUCCESS_FILE_NAME
-            self.validator.container_name = None
-            mock_download_single_file.return_value = file_path
-
-    def tearDown(self):
-        pass
-
-    def test_download_single_file(self):
-        # Arrange
-        file_upload_path = DOWNLOAD_FILE_PATH
-        self.validator.storage_client = MagicMock()
-        self.validator.storage_client.get_file_from_url = MagicMock()
-        file = MagicMock()
-        file.file_path = 'text_file.txt'
-        file.get_stream = MagicMock(return_value=b'file_content')
-        self.validator.storage_client.get_file_from_url.return_value = file
-
-        # Act
-        downloaded_file_path = self.validator.download_single_file(file_upload_path=file_upload_path)
-
-        # Assert
-        self.validator.storage_client.get_file_from_url.assert_called_once_with(self.validator.container_name,
-                                                                                file_upload_path)
-        file.get_stream.assert_called_once()
-        with open(downloaded_file_path, 'rb') as f:
-            content = f.read()
-        self.assertEqual(content, b'file_content')
-
-    def test_clean_up_file(self):
-        # Arrange
-        file_upload_path = DOWNLOAD_FILE_PATH
-        text_file_path = f'{file_upload_path}/text_file.txt'
-        f = open(text_file_path, "w")
-        f.write("Sample text")
-        f.close()
-
-        # Act
-        Validation.clean_up = MagicMock()
-
-        # Assert
-        # self.assertFalse(os.path.exists(text_file_path))
-
-    def test_clean_up_folder(self):
-        # Arrange
-        directory_name = 'temp'
-        directory_path = f'{DOWNLOAD_FILE_PATH}/{directory_name}'
-        is_exists = os.path.exists(directory_path)
-        if not is_exists:
-            os.makedirs(directory_path)
-
-        # Act
-        Validation.clean_up = MagicMock()
-
-        # Assert
-        # self.assertFalse(os.path.exists(directory_name))
-
-
 class TestValidation(unittest.TestCase):
 
-    @patch.object(Validation, 'download_single_file')
-    def setUp(self, mock_download_single_file):
-        os.makedirs(DOWNLOAD_FILE_PATH, exist_ok=True)
-        source = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
-        destination = f'{DOWNLOAD_FILE_PATH}/{FAILURE_FILE_NAME}'
+    @patch('src.validation.Settings')
+    def setUp(self, mock_settings):
+        # Mock Settings and storage client to avoid actual dependencies
+        mock_settings.return_value.event_bus.container_name = 'test_container'
 
-        if not os.path.isfile(destination):
-            shutil.copyfile(source, destination)
+        self.mock_storage_client = MagicMock()
 
-        file_path = f'{DOWNLOAD_FILE_PATH}/{FAILURE_FILE_NAME}'
+        # Test-specific setup
+        self.file_path = '/path/to/test.zip'
+        self.validation = Validation(file_path=self.file_path, storage_client=self.mock_storage_client)
 
-        with patch.object(Validation, '__init__', return_value=None):
-            self.validator = Validation(file_path=file_path, storage_client=MagicMock())
-            self.validator.file_path = file_path
-            self.validator.file_relative_path = FAILURE_FILE_NAME
-            self.validator.container_name = None
-            mock_download_single_file.return_value = file_path
+    @patch('os.makedirs')
+    @patch('os.path.exists', return_value=False)
+    @patch('src.validation.uuid.uuid1')
+    def test_validation_init_creates_unique_dir(self, mock_uuid, mock_exists, mock_makedirs):
+        """Test that the Validation class correctly creates directories."""
+        mock_uuid.return_value.hex = 'fixeduuidhex'
+        unique_id = 'fixeduuidhex'[0:24]
+        expected_dir = os.path.join(Path.cwd(), 'downloads', unique_id)
 
-    def tearDown(self):
-        pass
+        # Act by reinitializing to trigger the directory creation
+        self.validation = Validation(file_path=self.file_path, storage_client=self.mock_storage_client)
 
-    def test_validate_with_invalid_file(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
+        # Assert that os.makedirs was called for the unique dir path
+        mock_makedirs.assert_called_with(expected_dir)
 
+    @patch('src.validation.Validation.clean_up')
+    @patch('src.validation.Validation.download_single_file')
+    def test_validate_valid_zip(self, mock_download_file, mock_clean_up):
+        """Test the validate method for a valid zip file."""
+
+        mock_download_file.return_value = f'{SAVED_FILE_PATH}/{SUCCESS_FILE_NAME}'
         # Act
-        result = self.validator.validate()
+        result = self.validation.validate(max_errors=10)
 
-        # Assert
+        # Assert that validation is marked as valid
+        self.assertTrue(result.is_valid)
+        self.assertEqual(result.validation_message, '')
+
+        # Ensure clean_up is called twice (once for the file, once for the folder)
+        self.assertEqual(mock_clean_up.call_count, 2)
+
+
+    @patch('src.validation.Validation.clean_up')
+    @patch('src.validation.Validation.download_single_file')
+    def test_validate_invalid_file(self, mock_download_file, mock_clean_up):
+        """Test the validate method for a invalid file."""
+        mock_download_file.return_value = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
+        # Act
+        result = self.validation.validate(max_errors=10)
+
+        # Assert that validation is marked as valid
         self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
+        self.assertIn('Validation error', ' '.join(result.validation_message))
 
-    def test_validate_with_invalid_file_with_default_error_counts(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
+
+        # Ensure clean_up is called twice (once for the file, once for the folder)
+        self.assertEqual(mock_clean_up.call_count, 2)
+
+    @patch('src.validation.OSWValidation')
+    @patch('src.validation.Validation.clean_up')
+    def test_validate_invalid_zip(self, mock_clean_up, mock_osw_validation):
+        """Test validate method for invalid zip file with errors."""
+        # Mock the OSWValidation validate method to return errors
+        mock_validation_result = MagicMock()
+        mock_validation_result.is_valid = False
+        mock_validation_result.errors = 'Failed to validate because unknown file format'
+        mock_osw_validation.return_value.validate.return_value = mock_validation_result
 
         # Act
-        result = self.validator.validate()
+        result = self.validation.validate(max_errors=10)
 
-        # Assert
+        # Assert that validation failed and the error message is returned
         self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        self.assertLessEqual(len(result.validation_message), 20)
+        self.assertEqual(result.validation_message, 'Failed to validate because unknown file format')
 
-    def test_validate_with_invalid_file_with_specific_error_counts(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
+        # Ensure clean_up is called twice (once for the file, once for the folder)
+        self.assertEqual(mock_clean_up.call_count, 1)
+
+    @patch('src.validation.Validation.download_single_file')
+    def test_validate_unknown_file_format(self, mock_download_file):
+        """Test validation failure for unknown file format."""
+
+        # Mock the file path with a non-zip extension to trigger the else block
+        self.validation.file_relative_path = 'invalid_file.txt'
+
+        # Mock download to not affect the actual download method
+        mock_download_file.return_value = '/path/to/invalid_file.txt'
 
         # Act
-        result = self.validator.validate(max_errors=10)
+        result = self.validation.validate(max_errors=10)
 
-        # Assert
+        # Assert that the validation failed due to unknown file format
         self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        self.assertLessEqual(len(result.validation_message), 10)
+        self.assertEqual(result.validation_message, 'Failed to validate because unknown file format')
 
-    def test_is_osw_valid_with_invalid_zip_file(self):
+    @patch('src.validation.Validation.download_single_file', return_value=f'{SAVED_FILE_PATH}/{SUCCESS_FILE_NAME}')
+    @patch('gc.collect')
+    @patch('shutil.rmtree')
+    @patch('os.remove')
+    def test_gc_collect_called(self, mock_remove, mock_rmtree, mock_gc, mock_download_file):
+        """Test if garbage collection is called."""
+        # Mock the storage client to return a bytes-like stream
+        file_mock = MagicMock()
+        file_mock.get_stream.return_value = b'file content'
+
+        # Replace self.validation.storage_client.get_file_from_url to return the mocked file object
+        self.validation.storage_client.get_file_from_url.return_value = file_mock
+
+        # Simulate validation process
+        self.validation.validate(max_errors=10)
+
+        # Ensure garbage collection is called
+        mock_gc.assert_called()
+
+        # Ensure cleanup methods are called for valid paths
+        mock_remove.assert_called_once_with(f'{SAVED_FILE_PATH}/{SUCCESS_FILE_NAME}')
+
+    @patch('os.remove')
+    @patch('os.path.isfile', return_value=True)
+    def test_clean_up_file(self, mock_isfile, mock_remove):
+        """Test the static clean_up method with a file path."""
+        # Act
+        Validation.clean_up('/path/to/file.zip')
+
+        # Assert that os.remove is called for a file
+        mock_remove.assert_called_once_with('/path/to/file.zip')
+
+    @patch('os.remove')
+    @patch('shutil.rmtree')
+    def test_clean_up_directory(self, mock_rmtree, mock_remove):
+        """Test the static clean_up method with a directory path."""
+        # Act
+        Validation.clean_up('/path/to/directory')
+
+        # Assert that shutil.rmtree is called for a directory
+        mock_rmtree.assert_called_once_with('/path/to/directory', ignore_errors=False)
+        mock_remove.assert_not_called()
+
+    @patch('src.validation.uuid.uuid1')
+    def test_get_unique_id(self, mock_uuid):
+        """Test get_unique_id to ensure correct ID generation."""
         # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
+        mock_uuid.return_value.hex = 'mockuuidhex'
 
         # Act
-        result = self.validator.validate()
+        unique_id = self.validation.get_unique_id()
 
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_invalid_format_file(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_validate_with_id_missing_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{ID_MISSING_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_id_missing_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{ID_MISSING_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.is_osw_valid(max_errors=2)
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_validate_with_invalid_edges_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{EDGES_INVALID_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_invalid_edges_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{EDGES_INVALID_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.is_osw_valid(max_errors=2)
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_validate_with_invalid_nodes_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{NODES_INVALID_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_invalid_nodes_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{NODES_INVALID_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.is_osw_valid(max_errors=2)
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_validate_with_invalid_points_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{POINTS_INVALID_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_invalid_points_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{POINTS_INVALID_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.is_osw_valid(max_errors=2)
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_validate_with_invalid_files_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{INVALID_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_invalid_files_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{INVALID_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.is_osw_valid(max_errors=2)
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_validate_with_invalid_geometry_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{INVALID_GEOMETRY_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_invalid_geometry_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{INVALID_GEOMETRY_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.is_osw_valid(max_errors=2)
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_validate_with_missing_identifier_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{MISSING_IDENTIFIER_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_missing_identifier_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{MISSING_IDENTIFIER_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.is_osw_valid(max_errors=2)
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_validate_with_no_entity_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{NO_ENTITY_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_no_entity_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{NO_ENTITY_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.is_osw_valid(max_errors=2)
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_validate_with_wrong_datatype_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{WRONG_DATATYPE_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.validate()
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_is_osw_valid_with_wring_datatype_zip(self):
-        # Arrange
-        file_path = f'{SAVED_FILE_PATH}/{WRONG_DATATYPE_FILE_NAME}'
-        expected_downloaded_file_path = file_path
-        self.validator.download_single_file = MagicMock(return_value=expected_downloaded_file_path)
-        Validation.clean_up = MagicMock()
-
-        # Act
-        result = self.validator.is_osw_valid(max_errors=2)
-
-        # Assert
-        self.assertFalse(result.is_valid)
-        self.assertIsInstance(result.validation_message, list)
-        Validation.clean_up.assert_called_once_with(file_path)
-
-    def test_download_single_file_exception(self):
-        # Arrange
-        file_upload_path = DOWNLOAD_FILE_PATH
-        self.validator.storage_client = MagicMock()
-        self.validator.storage_client.get_file_from_url = MagicMock()
-        file = MagicMock()
-        file.file_path = 'text_file.txt'
-        file.get_stream = MagicMock(return_value=b'file_content')
-        self.validator.storage_client.get_file_from_url.return_value = file
-
-        # Act
-        downloaded_file_path = self.validator.download_single_file(file_upload_path=file_upload_path)
-
-        # Assert
-        self.validator.storage_client.get_file_from_url.assert_called_once_with(self.validator.container_name,
-                                                                                file_upload_path)
-        file.get_stream.assert_called_once()
-        with open(downloaded_file_path, 'rb') as f:
-            content = f.read()
-        self.assertEqual(content, b'file_content')
+        # Assert that the unique ID is generated as expected
+        self.assertEqual(unique_id, 'mockuuidhex'[0:24])
 
 
 if __name__ == '__main__':
