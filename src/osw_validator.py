@@ -9,6 +9,8 @@ from .validation import Validation
 from .models.queue_message_content import Upload, ValidationResult
 from .config import Settings
 import threading
+from .cache_controller import CacheController
+from .util import limit_cpu_usage
 
 logging.basicConfig()
 logger = logging.getLogger('OSW_VALIDATOR')
@@ -17,6 +19,7 @@ logger.setLevel(logging.INFO)
 
 class OSWValidator:
     _settings = Settings()
+    cache_controller: CacheController = None # added cache controller
 
     def __init__(self):
         self.core = Core()
@@ -30,17 +33,53 @@ class OSWValidator:
         self.logger = self.core.get_logger()
         self.storage_client = self.core.get_storage_client()
         self.auth = self.core.get_authorizer(config=options)
+        self.cleared_messages = []
         self.listener_thread = threading.Thread(target=self.start_listening)
         self.listener_thread.start()
 
     def start_listening(self):
-        def process(message) -> None:
+        def process(message, message_id) -> None:
             if message is not None:
+                if self.check_for_message(message_id):
+                    logger.warning(f'Message {message_id} already processed. Skipping...')
+                    return
+                if self.cache_controller:
+                    self.cache_controller.set(key=message_id, value='processing') # Push to cache
                 queue_message = QueueMessage.to_dict(message)
                 upload_message = Upload.data_from(queue_message)
                 self.validate(received_message=upload_message)
+                # logger.info(f'Waiting for 3 seconds simply to avoid processing the same message again.')
+                # time.sleep(3)
 
-        self.listening_topic.subscribe(subscription=self.subscription_name, callback=process)
+        self.listening_topic.subscribe(subscription=self.subscription_name, callback=process, settle_fail=self.on_settle_failed)
+    
+    def on_settle_failed(self, message_id:str):
+        # self.logger.error(f'Message {context} failed to settle.')
+        self.cleared_messages.append(message_id) # Push to db
+        if self.cache_controller:
+            self.cache_controller.set(key=message_id, value='failed') # Push to cache
+    
+    def check_for_message(self, messageId:str):
+        msg = next((x for x in self.cleared_messages if x == messageId), None) # search in db
+        if msg is not None:
+            self.cleared_messages.remove(msg) # remove from db
+            if self.cache_controller:
+                self.cache_controller.delete(key=messageId)
+            return True
+        if self.cache_controller:
+            msg = self.cache_controller.get(key=messageId)
+            if msg is not None:
+                # get the status from cache
+                status = msg.decode('utf-8')
+                if status == 'processing':
+                    # have to abandon the message
+                    raise Exception(f'Message {messageId} is already processing.') # need to understand
+                    return True
+                if status == 'failed':
+                    # remove from cache
+                    self.cache_controller.delete(key=messageId)
+                    return True
+        return False
 
     def validate(self, received_message: Upload):
         tdei_record_id: str = ''

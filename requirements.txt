@@ -1,6 +1,8 @@
 fastapi==0.88.0
 pydantic==1.10.4
-python-ms-core==0.0.22
+# python-ms-core==0.0.22
+python-ms-core @ git+https://github.com/TaskarCenterAtUW/TDEI-python-ms-core@e338c6f80e4ff4493b2301b48bf1745a5cd2bb71
 uvicorn==0.20.0
 html_testRunner==1.2.1
 python-osw-validation==0.2.7
+redis==5.1.1

@@ -4,6 +4,7 @@ from fastapi import FastAPI, APIRouter, Depends, status
 from functools import lru_cache
 from .config import Settings
 from .osw_validator import OSWValidator
+from .cache_controller import CacheController
 
 app = FastAPI()
 
@@ -22,6 +23,12 @@ async def startup_event(settings: Settings = Depends(get_settings)) -> None:
     try:
         # OSWValidator()
         app.validator = OSWValidator()
+        # app.cache_controller = CacheController()
+        # try:
+        #     app.cache_controller.connect()
+        #     app.validator.cache_controller = app.cache_controller
+        # except Exception as e:
+        #     print(f'Error setting cache controller: {str(e)}')
     except:
         print('\n\n\x1b[31m Application startup failed due to missing or invalid .env file \x1b[0m')
         print('\x1b[31m Please provide the valid .env file and .env file should contains following parameters\x1b[0m')
