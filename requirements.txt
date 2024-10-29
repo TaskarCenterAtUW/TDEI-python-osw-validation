@@ -3,4 +3,5 @@ pydantic==1.10.4
 python-ms-core==0.0.22
 uvicorn==0.20.0
 html_testRunner==1.2.1
+geopandas==0.14.4
 python-osw-validation==0.2.7
