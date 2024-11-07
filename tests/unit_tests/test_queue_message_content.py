@@ -19,6 +19,10 @@ class TestUpload(unittest.TestCase):
         data = TEST_DATA
         self.upload = Upload(data)
 
+    def test_message(self):
+        self.upload.message = 'New message'
+        self.assertEqual(self.upload.message, 'New message')
+
     def test_message_type(self):
         self.assertEqual(self.upload.message_type, 'workflow_identifier')
         self.upload.message_type = 'New messageType'
