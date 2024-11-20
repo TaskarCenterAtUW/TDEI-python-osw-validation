@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import MagicMock
 from src.models.queue_message_content import ValidationResult, Upload, UploadData, to_json
 
-current_dir = os.path.dirname(os.path.abspath(os.path.join(__file__, '../')))
+current_dir = os.path.dirname(os.path.abspath(os.path.join(__file__, '../../')))
 parent_dir = os.path.dirname(current_dir)
 
 TEST_JSON_FILE = os.path.join(parent_dir, 'src/assets/osw-upload.json')
