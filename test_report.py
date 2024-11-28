@@ -2,7 +2,7 @@ import unittest
 import HtmlTestRunner
 
 # Define your test cases
-from tests.unit_tests.test_queue_message_content import TestUpload, TestUploadData, TestToJson, TestValidationResult
+from tests.unit_tests.models.test_queue_message_content import TestUpload, TestUploadData, TestToJson, TestValidationResult
 from tests.unit_tests.test_validation import TestOtherValidation, TestValidation
 from tests.unit_tests.test_osw_validator import TestOSWValidator
 from tests.unit_tests.test_main import TestApp
