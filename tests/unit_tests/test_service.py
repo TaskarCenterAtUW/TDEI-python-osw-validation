@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from src.osw_validator import OSWValidator
+from src.models.queue_message_content import Upload
 from src.models.queue_message_content import ValidationResult
 
 
@@ -25,7 +26,7 @@ class TestOSWValidatorService(unittest.TestCase):
         self.service = OSWValidator()
         self.service.storage_client = MagicMock()
         self.service.container_name = 'test_container'
-        self.auth = MagicMock()
+        self.service.auth = MagicMock()
 
         # Define a sample message with proper strings
         self.sample_message = {
@@ -115,7 +116,8 @@ class TestOSWValidatorService(unittest.TestCase):
 
         # Assert that the result indicates failure
         self.assertFalse(actual_result.is_valid)
-        self.assertEqual(actual_result.validation_message, 'Error occurred while validating OSW request Request does not have valid file path specified.')
+        self.assertEqual(actual_result.validation_message,
+                         'Error occurred while validating OSW request Request does not have valid file path specified.')
 
         # Ensure the upload_message is the expected object
         self.assertEqual(actual_upload_message, mock_request_message)
@@ -162,6 +164,185 @@ class TestOSWValidatorService(unittest.TestCase):
         self.assertTrue(actual_result.is_valid)
         self.assertEqual(actual_upload_message, mock_request_message)
 
+    @patch('src.osw_validator.threading.Thread')
+    def test_stop_listening(self, mock_thread):
+        # Arrange
+        mock_thread_instance = MagicMock()
+        mock_thread.return_value = mock_thread_instance
+
+        self.service.listener_thread = mock_thread_instance
+
+        # Act
+        result = self.service.stop_listening()
+
+        # Assert
+        mock_thread_instance.join.assert_called_once_with(timeout=0)
+        self.assertIsNone(result)
+
+    def test_has_permission_success(self):
+        mock_message = Upload(data={
+            'data': {
+                'user_id': '1233',
+                'tdei_project_group_id': '444444'
+            },
+            'message': 'test_message',
+            'messageType': 'message_type',
+            'messageId': '123'
+        })
+
+        self.service.auth.has_permission = MagicMock()
+        self.service.auth.has_permission.return_value = True
+
+        result = self.service.has_permission(
+            roles=['tdei-admin', 'poc', 'osw_data_generator'],
+            queue_message=mock_message
+        )
+        self.assertTrue(result)
+        self.service.auth.has_permission.assert_called_once()
+
+    def test_has_permission_failure(self):
+        mock_message = Upload(data={
+            'data': {
+                'user_id': '1233',
+                'tdei_project_group_id': '444444'
+            },
+            'message': 'test_message',
+            'messageType': 'message_type',
+            'messageId': '123'
+        })
+
+        self.service.auth.has_permission = MagicMock()
+        self.service.auth.has_permission.return_value = False
+
+        result = self.service.has_permission(
+            roles=[],
+            queue_message=mock_message
+        )
+        self.assertFalse(result)
+        self.service.auth.has_permission.assert_called_once()
+
+    def test_has_permission_exception(self):
+        mock_message = Upload(data={
+            'data': {
+                'user_id': '1233',
+                'tdei_project_group_id': '444444'
+            },
+            'message': 'test_message',
+            'messageType': 'message_type',
+            'messageId': '123'
+        })
+
+        self.service.auth.has_permission = MagicMock()
+        self.service.auth.has_permission.side_effect = Exception('Mock exception')
+
+        result = self.service.has_permission(
+            roles=[],
+            queue_message=mock_message
+        )
+        self.assertFalse(result)
+        self.service.auth.has_permission.assert_called_once()
+
+    def test_send_status_success(self):
+        validation_result = ValidationResult()
+        validation_result.is_valid = True
+        validation_result.validation_message = ''
+
+        mock_message = Upload(data={
+            'data': {
+                'user_id': '1233',
+                'tdei_project_group_id': '444444'
+            },
+            'message': 'test_message',
+            'messageType': 'message_type',
+            'messageId': '123'
+        })
+
+        mock_topic = self.service.core.get_topic.return_value
+        mock_publish = mock_topic.publish
+
+        self.service.send_status(result=validation_result, upload_message=mock_message)
+
+        mock_publish.assert_called_once()
+
+    def test_send_status_failure(self):
+        validation_result = ValidationResult()
+        validation_result.is_valid = False
+        validation_result.validation_message = 'Failed'
+
+        mock_message = Upload(data={
+            'data': {
+                'user_id': '1233',
+                'tdei_project_group_id': '444444'
+            },
+            'message': 'test_message',
+            'messageType': 'message_type',
+            'messageId': '123'
+        })
+
+        mock_topic = self.service.core.get_topic.return_value
+        mock_publish = mock_topic.publish
+
+        self.service.send_status(result=validation_result, upload_message=mock_message)
+
+        mock_publish.assert_called_once()
+
+    def test_send_status_exception(self):
+        validation_result = ValidationResult()
+        validation_result.is_valid = False
+        validation_result.validation_message = 'Failed'
+
+        mock_message = Upload(data={
+            'data': {
+                'user_id': '1233',
+                'tdei_project_group_id': '444444'
+            },
+            'message': 'test_message',
+            'messageType': 'message_type',
+            'messageId': '123'
+        })
+
+        mock_topic = self.service.core.get_topic.return_value
+        mock_publish = mock_topic.publish
+        mock_publish.side_effect = Exception('Mock Exception')
+
+        self.service.send_status(result=validation_result, upload_message=mock_message)
+
+        mock_publish.assert_called_once()
+
+    def test_validate_with_unauthorized(self):
+        # Arrange
+        self.service.has_permission = MagicMock()
+        self.service.has_permission.return_value = None
+
+        mock_message = Upload(data={
+            'data': {
+                'user_id': '1233',
+                'tdei_project_group_id': '444444',
+                'file_upload_path': 'mock_file_upload_path'
+            },
+            'message': 'test_message',
+            'messageType': 'message_type',
+            'messageId': '123'
+        })
+
+        # Mock the send_status method
+        self.service.send_status = MagicMock()
+
+        # Act
+        self.service.validate(mock_message)
+
+        # Assert
+
+        # Ensure send_status was called with a successful validation result
+        self.service.send_status.assert_called_once()
+
+        # Extract the actual result and upload message
+        actual_result = self.service.send_status.call_args[1]['result']
+        actual_upload_message = self.service.send_status.call_args[1]['upload_message']
+
+        # Assert the result is valid and the upload_message is the mock_request_message
+        self.assertFalse(actual_result.is_valid)
+        self.service.has_permission.assert_called_once()
 
 
 if __name__ == '__main__':
