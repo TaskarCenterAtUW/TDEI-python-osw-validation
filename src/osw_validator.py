@@ -9,6 +9,7 @@ from .validation import Validation
 from .models.queue_message_content import Upload, ValidationResult
 from .config import Settings
 import threading
+import python_osw_validation
 
 logging.basicConfig()
 logger = logging.getLogger('OSW_VALIDATOR')
@@ -77,11 +78,16 @@ class OSWValidator:
     def send_status(self, result: ValidationResult, upload_message: Upload):
         upload_message.data.success = result.is_valid
         upload_message.data.message = result.validation_message
+        resp_data = upload_message.data.to_json()
+        resp_data['package'] = {
+            'python-ms-core': Core.__version__,
+            'python-osw-validation': python_osw_validation.__version__
+        }
 
         data = QueueMessage.data_from({
             'messageId': upload_message.message_id,
             'messageType': upload_message.message_type,
-            'data': upload_message.data.to_json()
+            'data': resp_data
         })
         try:
             self.core.get_topic(topic_name=self._settings.event_bus.validation_topic).publish(data=data)
