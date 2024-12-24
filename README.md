@@ -23,15 +23,16 @@ The project is built on Python with FastAPI framework. All the regular nuances f
 - Connecting this to cloud will need the following in the `.env` file
 
 ```bash
+PROVIDER=Azure
 QUEUECONNECTION=xxxx
 STORAGECONNECTION=xxxx
 VALIDATION_REQ_TOPIC=xxxx
 VALIDATION_REQ_SUB=xxxx
 VALIDATION_RES_TOPIC=xxxx
 CONTAINER_NAME=xxxx
-AUTH_PERMISSION_URL=xxx
-MAX_CONCURRENT_MESSAGES=xxx
-
+AUTH_PERMISSION_URL=xxx # This is the URL to get the token
+MAX_CONCURRENT_MESSAGES=xxx # Optional if not provided defaults to 2
+AUTH_SIMULATE=xxx # Optional if not provided defaults to False
 ```
 
 The application connect with the `STORAGECONNECTION` string provided in `.env` file and validates downloaded zipfile using `python-osw-validation` package.
