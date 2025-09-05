@@ -38,7 +38,7 @@ class TestSettings(unittest.TestCase):
     def test_default_settings(self):
         settings = Settings()
         self.assertEqual(settings.app_name, 'python-osw-validation')
-        self.assertEqual(settings.event_bus.container_name, 'osw')
+        self.assertEqual(settings.event_bus.container_name, 'tdei-storage-test')
         self.assertIsNone(settings.auth_permission_url)
         self.assertEqual(settings.max_concurrent_messages, 2)
 
