@@ -9,6 +9,7 @@ from .config import Settings
 from python_osw_validation import OSWValidation
 from .models.queue_message_content import ValidationResult
 import uuid
+import json
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Path used for download file generation.
@@ -55,8 +56,8 @@ class Validation:
                 validation_result = validator.validate(max_errors)
                 result.is_valid = validation_result.is_valid
                 if not result.is_valid:
-                    result.validation_message = validation_result.errors
-                    logger.error(f' Error While Validating File: {str(validation_result.errors)}')
+                    result.validation_message = json.dumps(validation_result.issues)
+                    logger.error(f' Error While Validating File: {json.dumps(validation_result.issues)}')
                 Validation.clean_up(downloaded_file_path)
             else:
                 result.validation_message = 'Failed to validate because unknown file format'
