@@ -1,4 +1,5 @@
 import os
+import json
 import unittest
 from pathlib import Path
 from src.validation import Validation
@@ -75,9 +76,33 @@ class TestValidation(unittest.TestCase):
 
         # Assert that validation is marked as valid
         self.assertFalse(result.is_valid)
-        self.assertIn('Validation error', ' '.join(result.validation_message))
+        errors = json.loads(result.validation_message)
+        self.assertNotEqual(len(errors), 0)
 
 
+        # Ensure clean_up is called twice (once for the file, once for the folder)
+        self.assertEqual(mock_clean_up.call_count, 2)
+
+    @patch('src.validation.Validation.clean_up')
+    @patch('src.validation.Validation.download_single_file')
+    def test_validate_invalid_file_with_errors(self, mock_download_file, mock_clean_up):
+        """Test the validate method for a invalid file."""
+        mock_download_file.return_value = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
+        error_in_file = 'wa.microsoft.graph.edges.OSW.geojson'
+        feature_indexes = [3, 6, 8, 25]
+        error_message = "Additional properties are not allowed ('crossing' was unexpected)"
+        # Act
+        result = self.validation.validate(max_errors=10)
+
+        # Assert that validation is marked as valid
+        self.assertFalse(result.is_valid)
+        errors = json.loads(result.validation_message)
+        count = 0
+        for error in errors:
+            self.assertEqual(error['filename'], error_in_file)
+            self.assertEqual(error['error_message'][0], error_message)
+            self.assertEqual(error['feature_index'], feature_indexes[count])
+            count += 1
         # Ensure clean_up is called twice (once for the file, once for the folder)
         self.assertEqual(mock_clean_up.call_count, 2)
 
