@@ -89,20 +89,36 @@ class TestValidation(unittest.TestCase):
         """Test the validate method for a invalid file."""
         mock_download_file.return_value = f'{SAVED_FILE_PATH}/{FAILURE_FILE_NAME}'
         error_in_file = 'wa.microsoft.graph.edges.OSW.geojson'
-        feature_indexes = [3, 6, 8, 25]
-        error_message = "Additional properties are not allowed ('crossing' was unexpected)"
+        expected_errors = [
+            {
+                'feature_index': 3,
+                'error_message': '"highway" is a required property'
+            },
+            {
+                'feature_index': 6,
+                'error_message': '"highway" is a required property'
+            },
+            {
+                'feature_index': 8,
+                'error_message': '"highway" is a required property'
+            },
+            {
+                'feature_index': 25,
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
+            }
+        ]
         # Act
         result = self.validation.validate(max_errors=10)
 
         # Assert that validation is marked as valid
         self.assertFalse(result.is_valid)
         errors = json.loads(result.validation_message)
-        count = 0
-        for error in errors:
+        self.assertEqual(len(errors), len(expected_errors))
+
+        for expected, error in zip(expected_errors, errors):
             self.assertEqual(error['filename'], error_in_file)
-            self.assertEqual(error['error_message'][0], error_message)
-            self.assertEqual(error['feature_index'], feature_indexes[count])
-            count += 1
+            self.assertEqual(error['feature_index'], expected['feature_index'])
+            self.assertEqual(error['error_message'][0], expected['error_message'])
         # Ensure clean_up is called twice (once for the file, once for the folder)
         self.assertEqual(mock_clean_up.call_count, 2)
 
