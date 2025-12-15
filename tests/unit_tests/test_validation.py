@@ -92,18 +92,22 @@ class TestValidation(unittest.TestCase):
         expected_errors = [
             {
                 'feature_index': 3,
-                'error_message': '"highway" is a required property'
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
             },
             {
                 'feature_index': 6,
-                'error_message': '"highway" is a required property'
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
             },
             {
                 'feature_index': 8,
-                'error_message': '"highway" is a required property'
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
             },
             {
                 'feature_index': 25,
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
+            },
+            {
+                'feature_index': 27,
                 'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
             }
         ]
