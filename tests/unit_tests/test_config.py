@@ -2,6 +2,7 @@ import os
 import unittest
 from unittest.mock import patch
 from src.config import Settings
+import importlib
 
 
 class TestSettings(unittest.TestCase):
@@ -34,9 +35,12 @@ class TestSettings(unittest.TestCase):
         settings = Settings()
         self.assertEqual(settings.auth_provider, 'Hosted')
 
-    @patch.dict(os.environ, {}, clear=True)
+    @patch.dict(os.environ, {'CONTAINER_NAME': 'osw'}, clear=True)
     def test_default_settings(self):
-        settings = Settings()
+        # Reload config to pick up the patched environment and bypass .env values
+        from src import config
+        importlib.reload(config)
+        settings = config.Settings()
         self.assertEqual(settings.app_name, 'python-osw-validation')
         self.assertEqual(settings.event_bus.container_name, 'osw')
         self.assertIsNone(settings.auth_permission_url)
