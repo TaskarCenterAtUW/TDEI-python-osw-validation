@@ -39,9 +39,10 @@ class TestOSWValidatorService(unittest.TestCase):
             }
         }
 
+    @patch.object(OSWValidator, '_stop_server_and_container')
     @patch('src.osw_validator.QueueMessage')
     @patch('src.osw_validator.Upload')
-    def test_subscribe_with_valid_message(self, mock_request_message, mock_queue_message):
+    def test_subscribe_with_valid_message(self, mock_stop_server, mock_queue_message, mock_request_message):
         # Arrange
         mock_message = MagicMock()
         mock_queue_message.to_dict.return_value = self.sample_message
@@ -55,6 +56,7 @@ class TestOSWValidatorService(unittest.TestCase):
 
         # Assert
         self.service.validate.assert_called_once_with(received_message=mock_request_message.data_from())
+        mock_stop_server.assert_called_once()
 
     @patch('src.osw_validator.Validation')
     def test_validate_with_valid_file_path(self, mock_validation):
@@ -164,8 +166,9 @@ class TestOSWValidatorService(unittest.TestCase):
         self.assertTrue(actual_result.is_valid)
         self.assertEqual(actual_upload_message, mock_request_message)
 
+    @patch.object(OSWValidator, '_stop_server_and_container')
     @patch('src.osw_validator.threading.Thread')
-    def test_stop_listening(self, mock_thread):
+    def test_stop_listening(self, mock_stop, mock_thread):
         # Arrange
         mock_thread_instance = MagicMock()
         mock_thread.return_value = mock_thread_instance
@@ -177,6 +180,7 @@ class TestOSWValidatorService(unittest.TestCase):
 
         # Assert
         mock_thread_instance.join.assert_called_once_with(timeout=0)
+        mock_stop.assert_called_once()
         self.assertIsNone(result)
 
     def test_has_permission_success(self):

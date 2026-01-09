@@ -1,5 +1,8 @@
 import gc
 import logging
+import os
+import signal
+import time
 import urllib.parse
 from typing import List
 from python_ms_core import Core
@@ -31,7 +34,8 @@ class OSWValidator:
         self.logger = self.core.get_logger()
         self.storage_client = self.core.get_storage_client()
         self.auth = self.core.get_authorizer(config=options)
-        self.listener_thread = threading.Thread(target=self.start_listening)
+        self._shutdown_triggered = threading.Event()
+        self.listener_thread = threading.Thread(target=self.start_listening, daemon=True)
         self.listener_thread.start()
 
     def start_listening(self):
@@ -45,6 +49,7 @@ class OSWValidator:
 
     def validate(self, received_message: Upload):
         tdei_record_id: str = ''
+        status_sent = False
         try:
             tdei_record_id = received_message.message_id
             logger.info(f'Received message for : {tdei_record_id} Message received for OSW validation !')
@@ -66,6 +71,7 @@ class OSWValidator:
                 validation_result = Validation(file_path=file_upload_path, storage_client=self.storage_client)
                 result = validation_result.validate()
                 self.send_status(result=result, upload_message=received_message)
+                status_sent = True
             else:
                 raise Exception('File entity not found')
         except Exception as e:
@@ -74,6 +80,13 @@ class OSWValidator:
             result.is_valid = False
             result.validation_message = f'Error occurred while validating OSW request {e}'
             self.send_status(result=result, upload_message=received_message)
+            status_sent = True
+        finally:
+            if status_sent:
+                logger.info('Triggering server shutdown after status send.')
+            else:
+                logger.warning('Server shutdown skipped because status was not sent.')
+            self._stop_server_and_container(delay_seconds=2)
 
     def send_status(self, result: ValidationResult, upload_message: Upload):
         upload_message.data.success = result.is_valid
@@ -90,6 +103,7 @@ class OSWValidator:
             'data': resp_data
         })
         try:
+            logger.info('Sending validation result to response topic.')
             self.core.get_topic(topic_name=self._settings.event_bus.validation_topic).publish(data=data)
             logger.info(f'Publishing message for : {upload_message.message_id}')
         except Exception as e:
@@ -113,4 +127,30 @@ class OSWValidator:
             return False
 
     def stop_listening(self):
-        self.listener_thread.join(timeout=0) # Stop the thread during shutdown.Its still an attempt. Not sure if this will work.
+        self._stop_server_and_container()
+        if hasattr(self, 'listener_thread'):
+            self.listener_thread.join(timeout=0) # Stop the thread during shutdown.Its still an attempt. Not sure if this will work.
+
+    def _stop_server_and_container(self, delay_seconds: float = 0.0):
+        """
+        Attempt to gracefully stop the current process (stopping FastAPI/uvicorn and the Docker container).
+        """
+        logger.info('Gracefully stopping FastAPI/uvicorn and Docker container')
+        if self._shutdown_triggered.is_set():
+            logger.info('Server stop already in progress; skipping duplicate trigger.')
+            return
+        self._shutdown_triggered.set()
+        logger.info('Server stop triggered; scheduling shutdown.')
+        def _terminate():
+            if delay_seconds:
+                time.sleep(delay_seconds)
+            try:
+                logger.info('Sending SIGTERM to stop server/container.')
+                os.kill(os.getpid(), signal.SIGTERM)
+            except Exception as err:
+                logger.warning(f'Error occurred while sending SIGTERM: {err}')
+            finally:
+                logger.info('Forcing process exit to stop server/container.')
+                os._exit(0)
+
+        threading.Thread(target=_terminate, daemon=True).start()
