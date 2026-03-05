@@ -24,6 +24,9 @@ class OSWValidator:
 
     def __init__(self):
         self.core = Core()
+
+        ## Print the core version
+        print(f'Core version: {self.core.__version__}')
         options = {
             'provider': self._settings.auth_provider,
             'api_url': self._settings.auth_permission_url
@@ -45,7 +48,7 @@ class OSWValidator:
                 upload_message = Upload.data_from(queue_message)
                 self.validate(received_message=upload_message)
 
-        self.listening_topic.subscribe(subscription=self.subscription_name, callback=process)
+        self.listening_topic.subscribe(subscription=self.subscription_name, callback=process, max_receivable_messages=self._settings.max_receivable_messages)
 
     def validate(self, received_message: Upload):
         tdei_record_id: str = ''

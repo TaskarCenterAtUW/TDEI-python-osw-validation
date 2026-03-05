@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     event_bus = EventBusSettings()
     auth_permission_url: str = os.environ.get('AUTH_PERMISSION_URL', None)
     max_concurrent_messages: int = os.environ.get('MAX_CONCURRENT_MESSAGES', 1)
+    max_receivable_messages: int = os.environ.get('MAX_RECEIVABLE_MESSAGES',-1) # -1 means no limit
 
     @property
     def auth_provider(self) -> str:
