@@ -151,4 +151,6 @@ The format is mentioned in [osw-upload.json](./src/assets/osw-upload.json)
 The outgoing messages will be to the `osw-validation` topic.
 The format of the message is at [osw-validation.json](./src/assets/osw-validation.json)
 
+### Git Workflow
 
+The Git workflow automates building the Docker image, pushing it to Azure Container Registry (ACR), and updating the Scalar function app with the new image and any application settings from the repository environment variables.
