@@ -22,6 +22,7 @@ async def startup_event(settings: Settings = Depends(get_settings)) -> None:
     try:
         # OSWValidator()
         app.validator = OSWValidator()
+
     except:
         print('\n\n\x1b[31m Application startup failed due to missing or invalid .env file \x1b[0m')
         print('\x1b[31m Please provide the valid .env file and .env file should contains following parameters\x1b[0m')

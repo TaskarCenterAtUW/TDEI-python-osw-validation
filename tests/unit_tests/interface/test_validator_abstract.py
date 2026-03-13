@@ -12,6 +12,11 @@ class ConcreteValidator(ValidatorAbstract):
         pass
 
 
+class SuperCallingValidator(ValidatorAbstract):
+    def validate(self, message: QueueMessage) -> None:
+        return super().validate(message)
+
+
 class TestValidatorAbstract(unittest.TestCase):
 
     def test_abstract_method_enforcement(self):
@@ -36,6 +41,14 @@ class TestValidatorAbstract(unittest.TestCase):
 
         # Assert that the mocked message object is a valid argument
         self.assertTrue(hasattr(message, '__class__'))
+
+    def test_abstract_base_method_body_returns_none(self):
+        message = MagicMock(spec=QueueMessage)
+        validator = SuperCallingValidator()
+
+        result = validator.validate(message)
+
+        self.assertIsNone(result)
 
 
 if __name__ == '__main__':
