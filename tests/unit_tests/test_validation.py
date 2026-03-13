@@ -92,23 +92,23 @@ class TestValidation(unittest.TestCase):
         expected_errors = [
             {
                 'feature_index': 3,
-                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected). If you want to carry this tag, change it to ext:crossing"
             },
             {
                 'feature_index': 6,
-                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected). If you want to carry this tag, change it to ext:crossing"
             },
             {
                 'feature_index': 8,
-                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected). If you want to carry this tag, change it to ext:crossing"
             },
             {
                 'feature_index': 25,
-                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected). If you want to carry this tag, change it to ext:crossing"
             },
             {
                 'feature_index': 27,
-                'error_message': "Additional properties are not allowed ('crossing' was unexpected)"
+                'error_message': "Additional properties are not allowed ('crossing' was unexpected). If you want to carry this tag, change it to ext:crossing"
             }
         ]
         # Act
