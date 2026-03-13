@@ -44,7 +44,7 @@ class TestSettings(unittest.TestCase):
         self.assertEqual(settings.app_name, 'python-osw-validation')
         self.assertEqual(settings.event_bus.container_name, 'osw')
         self.assertIsNone(settings.auth_permission_url)
-        self.assertEqual(settings.max_concurrent_messages, 2)
+        self.assertEqual(settings.max_concurrent_messages, 1)
 
 
 if __name__ == '__main__':
