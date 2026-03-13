@@ -19,6 +19,8 @@ class TestOSWValidatorService(unittest.TestCase):
         mock_settings.return_value.event_bus.container_name = 'test_container'
 
         # Mock Core
+        mock_core.__version__ = 'test-core-version'
+        mock_core.return_value.__version__ = 'test-core-version'
         mock_core.return_value.get_topic.return_value = MagicMock()
         mock_core.return_value.get_storage_client.return_value = MagicMock()
 
@@ -42,11 +44,12 @@ class TestOSWValidatorService(unittest.TestCase):
     @patch.object(OSWValidator, '_stop_server_and_container')
     @patch('src.osw_validator.QueueMessage')
     @patch('src.osw_validator.Upload')
-    def test_subscribe_with_valid_message(self, mock_stop_server, mock_queue_message, mock_request_message):
+    def test_subscribe_with_valid_message(self, mock_upload, mock_queue_message, mock_stop_server):
         # Arrange
         mock_message = MagicMock()
         mock_queue_message.to_dict.return_value = self.sample_message
-        mock_request_message.from_dict.return_value = mock_request_message
+        mock_upload_message = MagicMock()
+        mock_upload.data_from.return_value = mock_upload_message
         self.service.validate = MagicMock()
 
         # Act
@@ -55,8 +58,8 @@ class TestOSWValidatorService(unittest.TestCase):
         callback(mock_message)
 
         # Assert
-        self.service.validate.assert_called_once_with(received_message=mock_request_message.data_from())
-        mock_stop_server.assert_called_once()
+        self.service.validate.assert_called_once_with(received_message=mock_upload_message)
+        mock_stop_server.assert_not_called()
 
     @patch('src.osw_validator.Validation')
     def test_validate_with_valid_file_path(self, mock_validation):
@@ -167,12 +170,9 @@ class TestOSWValidatorService(unittest.TestCase):
         self.assertEqual(actual_upload_message, mock_request_message)
 
     @patch.object(OSWValidator, '_stop_server_and_container')
-    @patch('src.osw_validator.threading.Thread')
-    def test_stop_listening(self, mock_stop, mock_thread):
+    def test_stop_listening(self, mock_stop_server):
         # Arrange
         mock_thread_instance = MagicMock()
-        mock_thread.return_value = mock_thread_instance
-
         self.service.listener_thread = mock_thread_instance
 
         # Act
@@ -180,7 +180,7 @@ class TestOSWValidatorService(unittest.TestCase):
 
         # Assert
         mock_thread_instance.join.assert_called_once_with(timeout=0)
-        mock_stop.assert_called_once()
+        mock_stop_server.assert_called_once()
         self.assertIsNone(result)
 
     def test_has_permission_success(self):
