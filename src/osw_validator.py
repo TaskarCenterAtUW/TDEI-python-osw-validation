@@ -49,6 +49,9 @@ class OSWValidator:
                 self.validate(received_message=upload_message)
 
         self.listening_topic.subscribe(subscription=self.subscription_name, callback=process, max_receivable_messages=self._settings.max_receivable_messages)
+        if self._settings.max_receivable_messages > 0:
+            logger.info('Listener finished processing available messages; stopping server/container.')
+            self._stop_server_and_container(delay_seconds=2)
 
     def validate(self, received_message: Upload):
         tdei_record_id: str = ''
@@ -86,10 +89,9 @@ class OSWValidator:
             status_sent = True
         finally:
             if status_sent:
-                logger.info('Triggering server shutdown after status send.')
+                logger.info('Validation status sent for %s.', tdei_record_id)
             else:
-                logger.warning('Server shutdown skipped because status was not sent.')
-            self._stop_server_and_container(delay_seconds=2)
+                logger.warning('Validation status was not sent for %s.', tdei_record_id)
 
     def send_status(self, result: ValidationResult, upload_message: Upload):
         upload_message.data.success = result.is_valid
