@@ -58,7 +58,7 @@ class OSWValidator:
         status_sent = False
         try:
             tdei_record_id = received_message.message_id
-            logger.info(f'Received message for : {tdei_record_id} Message received for OSW validation !')
+            logger.info(f'Received message for : {tdei_record_id} Message received for OSW validation! Core version: {Core.__version__}')
 
             if received_message.data.file_upload_path is None:
                 error_msg = 'Request does not have valid file path specified.'
