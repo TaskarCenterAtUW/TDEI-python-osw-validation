@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, ANY
 from src.osw_validator import OSWValidator
 from src.models.queue_message_content import Upload
 from src.models.queue_message_content import ValidationResult
@@ -16,6 +16,7 @@ class TestOSWValidatorService(unittest.TestCase):
         mock_settings.return_value.event_bus.upload_topic = 'test_request_topic'
         mock_settings.return_value.event_bus.validation_topic = 'test_response_topic'
         mock_settings.return_value.max_concurrent_messages = 10
+        mock_settings.return_value.max_receivable_messages = -1
         mock_settings.return_value.get_download_directory.return_value = '/tmp'
         mock_settings.return_value.event_bus.container_name = 'test_container'
 
@@ -62,6 +63,18 @@ class TestOSWValidatorService(unittest.TestCase):
 
         # Assert
         self.service.validate.assert_called_once_with(received_message=mock_upload_message)
+
+    def test_start_listening_stops_container_after_subscribe_returns(self):
+        self.service._settings.max_receivable_messages = 1
+
+        self.service.start_listening()
+
+        self.service.listening_topic.subscribe.assert_called_once_with(
+            subscription=self.service.subscription_name,
+            callback=ANY,
+            max_receivable_messages=1,
+        )
+        self.service._stop_server_and_container.assert_called_once_with(delay_seconds=2)
 
     @patch('src.osw_validator.Validation')
     def test_validate_with_valid_file_path(self, mock_validation):
