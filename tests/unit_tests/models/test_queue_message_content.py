@@ -9,8 +9,8 @@ parent_dir = os.path.dirname(current_dir)
 
 TEST_JSON_FILE = os.path.join(parent_dir, 'src/assets/osw-upload.json')
 
-TEST_FILE = open(TEST_JSON_FILE)
-TEST_DATA = json.loads(TEST_FILE.read())
+with open(TEST_JSON_FILE) as test_file:
+    TEST_DATA = json.load(test_file)
 
 
 class TestUpload(unittest.TestCase):

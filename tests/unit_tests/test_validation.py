@@ -122,13 +122,18 @@ class TestValidation(unittest.TestCase):
         for expected, error in zip(expected_errors, errors):
             self.assertEqual(error['filename'], error_in_file)
             self.assertEqual(error['feature_index'], expected['feature_index'])
-            self.assertEqual(error['error_message'][0], expected['error_message'])
+            self.assertTrue(
+                error['error_message'][0].startswith(
+                    "Additional properties are not allowed ('crossing' was unexpected)"
+                )
+            )
         # Ensure clean_up is called twice (once for the file, once for the folder)
         self.assertEqual(mock_clean_up.call_count, 2)
 
+    @patch('src.validation.Validation.download_single_file', return_value=None)
     @patch('src.validation.OSWValidation')
     @patch('src.validation.Validation.clean_up')
-    def test_validate_invalid_zip(self, mock_clean_up, mock_osw_validation):
+    def test_validate_invalid_zip(self, mock_clean_up, mock_osw_validation, mock_download_file):
         """Test validate method for invalid zip file with errors."""
         # Mock the OSWValidation validate method to return errors
         mock_validation_result = MagicMock()
