@@ -1,5 +1,10 @@
 # TDEI-python-osw-validation
 
+[![Unit Tests](https://github.com/TaskarCenterAtUW/TDEI-python-osw-validation/actions/workflows/unit_tests.yaml/badge.svg)](https://github.com/TaskarCenterAtUW/TDEI-python-osw-validation/actions/workflows/unit_tests.yaml)
+![Coverage](https://raw.githubusercontent.com/TaskarCenterAtUW/TDEI-python-osw-validation/badges/coverage.svg)
+[![python-osw-validation](https://img.shields.io/pypi/v/python-osw-validation?label=python-osw-validation&cacheSeconds=60&t=1)](https://pypi.org/project/python-osw-validation/)
+[![python-ms-core](https://img.shields.io/pypi/v/python-ms-core?label=python-ms-core&cacheSeconds=60&t=1)](https://pypi.org/project/python-ms-core/)
+
 ## Introduction 
 Service to Validate the OSW files that is uploaded. At the moment, the service does the following:
 - Listens to the topic which is mentioned in `.env` file for any new message (that is triggered when a file is uploaded), example  `UPLOAD_TOPIC=osw-upload` 
