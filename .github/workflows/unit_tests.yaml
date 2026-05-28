@@ -2,8 +2,7 @@ name: Unit Tests
 on:
   workflow_dispatch:
   push:
-    branches-ignore:
-      - '**'
+    branches: [ main, dev, stage ]
   pull_request:
     branches: [ main, dev, stage ]
 
@@ -74,14 +73,12 @@ jobs:
         run: coverage report --fail-under=85
 
       - name: Generate coverage badge
-        if: github.event_name == 'push' || github.ref == 'refs/heads/main'
         run: |
           pip install coverage-badge
           mkdir -p badge-out
           coverage-badge -f -o badge-out/coverage.svg
 
       - name: Publish coverage badge to badges branch
-        if: github.event_name == 'push' || github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
