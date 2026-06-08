@@ -1,5 +1,10 @@
 # TDEI-python-osw-validation
 
+[![Unit Tests](https://github.com/TaskarCenterAtUW/TDEI-python-osw-validation/actions/workflows/unit_tests.yaml/badge.svg)](https://github.com/TaskarCenterAtUW/TDEI-python-osw-validation/actions/workflows/unit_tests.yaml)
+![Coverage](https://raw.githubusercontent.com/TaskarCenterAtUW/TDEI-python-osw-validation/badges/coverage.svg)
+[![python-osw-validation](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2FTaskarCenterAtUW%2FTDEI-python-osw-validation%2Fmain%2Frequirements.txt&search=%28%3Fm%29%5Epython-osw-validation%3D%3D%28%5B%5E%5Cr%5Cn%5D%2B%29&replace=%241&label=python-osw-validation&color=blue)](https://pypi.org/project/python-osw-validation/)
+[![python-ms-core](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2FTaskarCenterAtUW%2FTDEI-python-osw-validation%2Fmain%2Frequirements.txt&search=%28%3Fm%29%5Epython-ms-core%3D%3D%28%5B%5E%5Cr%5Cn%5D%2B%29&replace=%241&label=python-ms-core&color=blue)](https://pypi.org/project/python-ms-core/)
+
 ## Introduction 
 Service to Validate the OSW files that is uploaded. At the moment, the service does the following:
 - Listens to the topic which is mentioned in `.env` file for any new message (that is triggered when a file is uploaded), example  `UPLOAD_TOPIC=osw-upload` 
