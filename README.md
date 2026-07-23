@@ -37,6 +37,9 @@ VALIDATION_RES_TOPIC=xxxx
 CONTAINER_NAME=xxxx
 AUTH_PERMISSION_URL=xxx # This is the URL to get the token
 MAX_CONCURRENT_MESSAGES=xxx # Optional if not provided defaults to 2
+MAX_GEOMETRY_VERTICES=xxx # Optional if not provided defaults to 2000
+COORDINATE_PRECISION=xxx # Optional if not provided defaults to 7
+ALLOW_ZERO_LENGTH_LINES=xxx # Optional if not provided defaults to False
 AUTH_SIMULATE=xxx # Optional if not provided defaults to False
 ```
 
@@ -44,6 +47,7 @@ The application connect with the `STORAGECONNECTION` string provided in `.env` f
 `QUEUECONNECTION` is used to send out the messages and listen to messages.
 
 `MAX_CONCURRENT_MESSAGES` is the maximum number of concurrent messages that the service can handle. If not provided, defaults to 2
+`MAX_GEOMETRY_VERTICES`, `COORDINATE_PRECISION`, and `ALLOW_ZERO_LENGTH_LINES` configure `python-osw-validation` behavior. If not provided, the package defaults are used.
 
 ### How to Set up and Build
 Follow the steps to install the python packages required for both building and running the application
@@ -96,7 +100,8 @@ Follow the steps to install the python packages required for both building and r
       "user_id": "user_id",
       "tdei_project_group_id": "tdei_project_group_id",
       "success": true/false,
-      "message": "message" // if false the error string else empty string
+      "message": "message", // if false the error string else empty string
+      "warning": "warning" // non-blocking validation warning else empty string
     },
     "publishedDate": "published date"
   }

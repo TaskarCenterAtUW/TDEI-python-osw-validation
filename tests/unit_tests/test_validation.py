@@ -27,6 +27,9 @@ class TestValidation(unittest.TestCase):
     def setUp(self, mock_settings):
         # Mock Settings and storage client to avoid actual dependencies
         mock_settings.return_value.event_bus.container_name = 'test_container'
+        mock_settings.return_value.max_geometry_vertices = 2000
+        mock_settings.return_value.coordinate_precision = 7
+        mock_settings.return_value.allow_zero_length_lines = False
 
         self.mock_storage_client = MagicMock()
 
@@ -81,6 +84,10 @@ class TestValidation(unittest.TestCase):
 
         self.assertTrue(result.is_valid)
         self.assertEqual(result.warning, expected_warning)
+        config = mock_osw_validation.call_args[1]['config']
+        self.assertEqual(config.max_geometry_vertices, 2000)
+        self.assertEqual(config.coordinate_precision, 7)
+        self.assertFalse(config.allow_zero_length_lines)
         self.assertEqual(mock_clean_up.call_count, 2)
 
 
