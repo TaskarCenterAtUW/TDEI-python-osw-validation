@@ -263,6 +263,7 @@ class TestOSWValidatorService(unittest.TestCase):
         validation_result = ValidationResult()
         validation_result.is_valid = True
         validation_result.validation_message = ''
+        validation_result.warning = 'Coordinate precision exceeds 7 decimal places.'
 
         mock_message = Upload(data={
             'data': {
@@ -280,6 +281,28 @@ class TestOSWValidatorService(unittest.TestCase):
         self.service.send_status(result=validation_result, upload_message=mock_message)
 
         mock_publish.assert_called_once()
+
+    @patch('src.osw_validator.QueueMessage')
+    def test_send_status_includes_warning_in_response(self, mock_queue_message):
+        validation_result = ValidationResult(
+            is_valid=True,
+            validation_message='',
+            warning='Coordinate precision exceeds 7 decimal places.'
+        )
+        mock_message = Upload(data={
+            'data': {
+                'user_id': '1233',
+                'tdei_project_group_id': '444444'
+            },
+            'message': 'test_message',
+            'messageType': 'message_type',
+            'messageId': '123'
+        })
+
+        self.service.send_status(result=validation_result, upload_message=mock_message)
+
+        response_payload = mock_queue_message.data_from.call_args[0][0]
+        self.assertEqual(response_payload['data']['warning'], validation_result.warning)
 
     def test_send_status_failure(self):
         validation_result = ValidationResult()
