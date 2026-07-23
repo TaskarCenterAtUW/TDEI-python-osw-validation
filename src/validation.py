@@ -45,8 +45,6 @@ class Validation:
     def is_osw_valid(self, max_errors) -> ValidationResult:
         start_time = time.time()
         result = ValidationResult()
-        result.is_valid = False
-        result.validation_message = ''
         root, ext = os.path.splitext(self.file_relative_path)
         if ext and ext.lower() == '.zip':
             downloaded_file_path = self.download_single_file(self.file_path)
@@ -55,6 +53,7 @@ class Validation:
                 validator = OSWValidation(zipfile_path=downloaded_file_path)
                 validation_result = validator.validate(max_errors)
                 result.is_valid = validation_result.is_valid
+                result.warning = validation_result.warnings
                 if not result.is_valid:
                     result.validation_message = json.dumps(validation_result.issues)
                     logger.error(f' Error While Validating File: {json.dumps(validation_result.issues)}')
