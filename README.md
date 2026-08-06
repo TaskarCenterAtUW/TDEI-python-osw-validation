@@ -100,8 +100,7 @@ Follow the steps to install the python packages required for both building and r
       "user_id": "user_id",
       "tdei_project_group_id": "tdei_project_group_id",
       "success": true/false,
-      "message": "message", // if false the error string else empty string
-      "warning": "warning" // non-blocking validation warning else empty string
+      "message": "message" // if false the error string else empty string
     },
     "publishedDate": "published date"
   }
