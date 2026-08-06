@@ -85,7 +85,6 @@ class OSWValidator:
             result = ValidationResult()
             result.is_valid = False
             result.validation_message = f'Error occurred while validating OSW request {e}'
-            result.warning = ''
             self.send_status(result=result, upload_message=received_message)
             status_sent = True
         finally:
@@ -98,7 +97,6 @@ class OSWValidator:
         upload_message.data.success = result.is_valid
         upload_message.data.message = result.validation_message
         resp_data = upload_message.data.to_json()
-        resp_data['warning'] = result.warning
         resp_data['package'] = {
             'python-ms-core': Core.__version__,
             'python-osw-validation': python_osw_validation.__version__

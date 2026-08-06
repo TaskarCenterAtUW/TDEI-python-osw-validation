@@ -2,10 +2,9 @@ import json
 
 
 class ValidationResult:
-    def __init__(self, is_valid: bool = False, validation_message: str = '', warning: str = ''):
+    def __init__(self, is_valid: bool = False, validation_message: str = ''):
         self.is_valid = is_valid
         self.validation_message = validation_message
-        self.warning = warning or ''
 
 
 class Upload:

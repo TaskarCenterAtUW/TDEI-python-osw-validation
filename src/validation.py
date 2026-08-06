@@ -59,7 +59,6 @@ class Validation:
                 validator = OSWValidation(zipfile_path=downloaded_file_path, config=self.validation_config)
                 validation_result = validator.validate(max_errors)
                 result.is_valid = validation_result.is_valid
-                result.warning = validation_result.warnings
                 if not result.is_valid:
                     result.validation_message = json.dumps(validation_result.issues)
                     logger.error(f' Error While Validating File: {json.dumps(validation_result.issues)}')
