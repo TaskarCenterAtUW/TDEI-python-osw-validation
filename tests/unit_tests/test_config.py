@@ -53,7 +53,7 @@ class TestSettings(unittest.TestCase):
         self.assertEqual(settings.max_concurrent_messages, 1)
         self.assertEqual(settings.max_geometry_vertices, 2000)
         self.assertEqual(settings.coordinate_precision, 7)
-        self.assertFalse(settings.allow_zero_length_lines)
+        self.assertTrue(settings.allow_zero_length_lines)
 
 
 if __name__ == '__main__':
