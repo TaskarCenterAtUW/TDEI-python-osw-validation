@@ -7,6 +7,7 @@ import traceback
 from pathlib import Path
 from .config import Settings
 from python_osw_validation import OSWValidation
+from python_osw_validation.config import ValidationConfig
 from .models.queue_message_content import ValidationResult
 import uuid
 import json
@@ -27,6 +28,11 @@ class Validation:
         self.storage_client = storage_client
         self.file_path = file_path
         self.file_relative_path = file_path.split('/')[-1]
+        self.validation_config = ValidationConfig(
+            max_geometry_vertices=settings.max_geometry_vertices,
+            coordinate_precision=settings.coordinate_precision,
+            allow_zero_length_lines=settings.allow_zero_length_lines,
+        )
         self.client = self.storage_client.get_container(container_name=self.container_name)
         is_exists = os.path.exists(DOWNLOAD_DIR)
         unique_id = self.get_unique_id()
@@ -45,14 +51,12 @@ class Validation:
     def is_osw_valid(self, max_errors) -> ValidationResult:
         start_time = time.time()
         result = ValidationResult()
-        result.is_valid = False
-        result.validation_message = ''
         root, ext = os.path.splitext(self.file_relative_path)
         if ext and ext.lower() == '.zip':
             downloaded_file_path = self.download_single_file(self.file_path)
             if downloaded_file_path:
                 logger.info(f' Downloaded file path: {downloaded_file_path}')
-                validator = OSWValidation(zipfile_path=downloaded_file_path)
+                validator = OSWValidation(zipfile_path=downloaded_file_path, config=self.validation_config)
                 validation_result = validator.validate(max_errors)
                 result.is_valid = validation_result.is_valid
                 if not result.is_valid:
