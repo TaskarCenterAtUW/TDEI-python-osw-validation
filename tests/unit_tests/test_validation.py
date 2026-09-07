@@ -27,6 +27,9 @@ class TestValidation(unittest.TestCase):
     def setUp(self, mock_settings):
         # Mock Settings and storage client to avoid actual dependencies
         mock_settings.return_value.event_bus.container_name = 'test_container'
+        mock_settings.return_value.max_geometry_vertices = 2000
+        mock_settings.return_value.coordinate_precision = 7
+        mock_settings.return_value.allow_zero_length_lines = False
 
         self.mock_storage_client = MagicMock()
 
@@ -65,6 +68,24 @@ class TestValidation(unittest.TestCase):
         # Ensure clean_up is called twice (once for the file, once for the folder)
         self.assertEqual(mock_clean_up.call_count, 2)
 
+    @patch('src.validation.OSWValidation')
+    @patch('src.validation.Validation.clean_up')
+    @patch('src.validation.Validation.download_single_file')
+    def test_validate_passes_validation_config(self, mock_download_file, mock_clean_up, mock_osw_validation):
+        """Test that configured validation limits are passed to the OSW validator."""
+        mock_download_file.return_value = f'{SAVED_FILE_PATH}/{SUCCESS_FILE_NAME}'
+        mock_validation_result = MagicMock()
+        mock_validation_result.is_valid = True
+        mock_osw_validation.return_value.validate.return_value = mock_validation_result
+
+        result = self.validation.validate(max_errors=10)
+
+        self.assertTrue(result.is_valid)
+        config = mock_osw_validation.call_args[1]['config']
+        self.assertEqual(config.max_geometry_vertices, 2000)
+        self.assertEqual(config.coordinate_precision, 7)
+        self.assertFalse(config.allow_zero_length_lines)
+        self.assertEqual(mock_clean_up.call_count, 2)
 
     @patch('src.validation.Validation.clean_up')
     @patch('src.validation.Validation.download_single_file')

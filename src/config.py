@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     auth_permission_url: str = os.environ.get('AUTH_PERMISSION_URL', None)
     max_concurrent_messages: int = os.environ.get('MAX_CONCURRENT_MESSAGES', 1)
     max_receivable_messages: int = os.environ.get('MAX_RECEIVABLE_MESSAGES',-1) # -1 means no limit
+    max_geometry_vertices: int = os.environ.get('MAX_GEOMETRY_VERTICES', 2000)
+    coordinate_precision: int = os.environ.get('COORDINATE_PRECISION', 7)
+    allow_zero_length_lines: bool = os.environ.get('ALLOW_ZERO_LENGTH_LINES', True)
 
     @property
     def auth_provider(self) -> str:
